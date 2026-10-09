@@ -52,7 +52,9 @@ async def test_literal_argv_binary_output_and_replay(rpc, space):
     replay = await rpc.call("process/read", {"processId": "literal", "afterSeq": 0})
     assert replay["closed"] is True and replay["exited"] is True and replay["exitCode"] == 7
     assert replay["failure"] is None and replay["sandboxDenied"] is False
-    assert replay["chunks"] == [{k: e["params"][k] for k in ("seq", "stream", "chunk")} for e in events[:-2]]
+    assert len(replay["chunks"]) == len(events) - 2
+    for chunk, event in zip(replay["chunks"], events[:-2], strict=True):
+        assert_fields(chunk, {k: event["params"][k] for k in ("seq", "stream", "chunk")})
     assert replay["nextSeq"] == events[-1]["params"]["seq"] + 1
     empty = await rpc.call("process/read", {"processId": "literal", "afterSeq": replay["nextSeq"] - 1})
     assert empty["chunks"] == []
@@ -154,3 +156,28 @@ async def test_replay_reports_eviction(rpc):
     replay = await rpc.call("process/read", {"processId": "evict", "afterSeq": 0, "maxBytes": 32768})
     assert isinstance(replay["failure"], str) and replay["failure"]
     assert replay["chunks"] and all(unb64(c["chunk"]) for c in replay["chunks"])
+
+
+@pytest.mark.contract("C2")
+async def test_multiple_processes_share_one_session_without_mixing_output(rpc):
+    await rpc.start("first", ["/bin/bash", "-c", "sleep 0.1; printf first"])
+    await rpc.start("second", ["/bin/bash", "-c", "printf second"])
+    second, code2, _ = await rpc.complete("second")
+    first, code1, _ = await rpc.complete("first")
+    assert code1 == code2 == 0
+    assert first["stdout"] == b"first" and second["stdout"] == b"second"
+
+
+@pytest.mark.contract("C1")
+async def test_initialized_notification_is_required(client):
+    ws = await client.ws("/codex")
+    rpc = RPC(client, ws)
+    try:
+        await rpc.call("initialize", {"clientName": "spec"})
+        with pytest.raises(RPCError) as error:
+            await rpc.call("environment/status")
+        assert error.value.detail["code"] == -32002
+        await rpc.notify("initialized")
+        assert_fields(await rpc.call("environment/status"), {"status": "ready"})
+    finally:
+        await ws.close()

@@ -17,6 +17,7 @@ Default **core** checks discovery, HTTP execution, streaming execution, Codex pr
 | --- | --- |
 | `--profile browser` | Terminal page and browser WebSocket authorization. |
 | `--profile mounts --rw-dir /mnt/spec-rw --ro-dir /mnt/spec-ro` | Existing dedicated writable/read-only guest mounts, reported at those exact paths. |
+| `--profile proxy-tls --proxy-tls-cert CERT --proxy-tls-key KEY` | Adds HTTPS credential substitution, echo redaction and redirect scoping; implies proxy. Requires the disposable fixture below. |
 | `--profile proxy` | Proxy-enabled target; runner and server must share a host so the proxy can reach a synthetic loopback upstream. Temporarily replaces policy and restores it afterward. |
 
 ```sh
@@ -33,6 +34,28 @@ uv run exec-server-conformance --url http://127.0.0.1:18787 \
 Start a dedicated implementation on an unused loopback port and wait for `/health` to report readiness. For the mounts profile, expose two temporary host directories as `/mnt/spec-rw` (writable) and `/mnt/spec-ro` (read-only). For the proxy profile, start with a deny-all policy (`{"allow": []}`); the tests supply local allow rules as needed and restore the original policy. These launch settings are implementation-specific and are not part of the wire protocol.
 
 Shut down the dedicated server after testing. If it becomes unavailable during cleanup, guest scratch files may remain; all runner-created scratch files/directories use the `exec-server-spec-` prefix.
+
+## Optional HTTPS proxy fixture
+
+The HTTPS profile uses a synthetic host secret and a temporary localhost upstream certificate. Generate them with:
+
+```sh
+uv run exec-server-proxy-fixture work/tls
+```
+
+Before starting the dedicated target, source `work/tls/server-env.sh` in its launch shell. This sets `EXEC_SERVER_SPEC_SECRET` to a synthetic test value and supplies `SSL_CERT_FILE` / `NODE_EXTRA_CA_CERTS` for runtimes that support those trust settings. Other implementations must be configured to trust `work/tls/cert.pem` for upstream TLS and expose the same synthetic secret to their policy engine. This trust is scoped to the target process; do not install the certificate in the host trust store. The certificate expires after seven days; use a fresh directory to regenerate it.
+
+Then include the profile when invoking the runner:
+
+```sh
+uv run exec-server-conformance --url http://127.0.0.1:18787 \
+  --profile browser --profile mounts --profile proxy-tls \
+  --rw-dir /mnt/spec-rw --ro-dir /mnt/spec-ro \
+  --proxy-tls-cert work/tls/cert.pem --proxy-tls-key work/tls/key.pem \
+  --report work/full.json -q
+```
+
+The test upstream checks the substituted Authorization value, echoes it to verify response redaction, rejects incorrect placeholders, and redirects to a disallowed path to verify that authorization is checked again. Real credentials are neither needed nor used. The runner restores the original proxy policy after each test, but cannot restore connections closed by a policy update.
 
 ## Develop and distribute
 

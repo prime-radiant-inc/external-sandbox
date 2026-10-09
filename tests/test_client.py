@@ -76,3 +76,24 @@ def test_exit_must_have_exactly_one_status():
               "durationMs": 0, "exitCode": 0, "signal": 9}
     with pytest.raises(AssertionError):
         result_shape(result)
+
+
+def test_additional_response_fields_are_allowed():
+    from exec_server_spec.client import assert_fields
+    assert_fields({"status": "ready", "extension": 1}, {"status": "ready"})
+    with pytest.raises(AssertionError):
+        assert_fields({"ready": 1}, {"ready": True})
+
+
+def test_tls_fixture_is_disposable_and_refuses_overwrite(tmp_path):
+    import stat
+    from cryptography import x509
+    from exec_server_spec.tls_fixture import generate
+    directory = generate(tmp_path / "tls")
+    cert = x509.load_pem_x509_certificate((directory / "cert.pem").read_bytes())
+    assert "127.0.0.1" in str(cert.extensions.get_extension_for_class(x509.SubjectAlternativeName).value)
+    assert stat.S_IMODE((directory / "key.pem").stat().st_mode) == 0o600
+    original = (directory / "cert.pem").read_bytes()
+    with pytest.raises(ValueError, match="already exist"):
+        generate(directory)
+    assert (directory / "cert.pem").read_bytes() == original

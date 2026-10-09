@@ -1,5 +1,6 @@
 """Requires a dedicated proxy-enabled server on the same host as this runner."""
 import asyncio
+import gzip
 import copy
 import json
 import uuid
@@ -52,7 +53,7 @@ async def test_proxy_access_and_atomic_policy_validation(client, management):
         assert after.json()["policy"] == original
     for body, extra, status in [("{", {"Content-Type": "application/json"}, 400),
                                  ("{}", {"Content-Type": "text/plain"}, 415),
-                                 ("{}", {"Content-Type": "application/json", "Content-Encoding": "gzip"}, 415),
+                                 (gzip.compress(b'{}'), {"Content-Type": "application/json", "Content-Encoding": "gzip"}, 415),
                                  (" " * 262145, {"Content-Type": "application/json"}, 413)]:
         response = await client.request("PUT", "/proxy/api", headers={**headers, **extra}, data=body)
         assert response.status == status
@@ -132,5 +133,124 @@ except (urllib.error.URLError,OSError) as error:
             assert type(event["credentialInjected"]) is bool
             assert "?" not in event["path"] and "#" not in event["path"]
             assert not ({"headers", "body", "requestBody", "responseBody"} & event.keys())
+    finally:
+        await runner.cleanup()
+
+
+@pytest.mark.contract("P2")
+async def test_live_policy_update_revokes_existing_stream(client, management):
+    from exec_server_spec.client import Shell
+    headers, original = management
+    disconnected = asyncio.Event()
+
+    async def streaming(request):
+        response = web.StreamResponse()
+        await response.prepare(request)
+        await response.write(b"ready\n")
+        try:
+            async with asyncio.timeout(client.deadline):
+                while request.transport and not request.transport.is_closing():
+                    await asyncio.sleep(0.05)
+            disconnected.set()
+        finally:
+            disconnected.set()
+        return response
+
+    app = web.Application()
+    app.router.add_get("/stream", streaming)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "127.0.0.1", 0)
+    await site.start()
+    origin = f"http://127.0.0.1:{site._server.sockets[0].getsockname()[1]}"
+    ws = None
+    try:
+        response = await client.request("PUT", "/proxy/api", headers=headers, json={**original, "allow": [
+            {"origin": origin, "allowCidrs": ["127.0.0.1/32"]}]})
+        assert response.status == 200, response.text
+        script = f'''import os,urllib.request
+os.environ['no_proxy']=''; os.environ['NO_PROXY']=''
+handler=urllib.request.ProxyHandler({{'http':os.environ['http_proxy']}})
+with urllib.request.build_opener(handler).open({origin + '/stream'!r}, timeout=15) as response:
+    print(response.readline().decode().strip(), flush=True)
+    try:
+        response.read()
+    except Exception:
+        pass
+    print('closed', flush=True)
+'''
+        ws = await client.ws("/exec/ws")
+        shell = Shell(client, ws)
+        await shell.send(type="start", command=py(script), stdin=False, timeoutMs=20000)
+        await shell.until("stdout")
+        assert shell.output["stdout"] == b"ready\n"
+        response = await client.request("PUT", "/proxy/api", headers=headers, json={**original, "allow": []})
+        assert response.status == 200
+        # Must be revocation, not the guest's 15-second socket timeout.
+        async with asyncio.timeout(5):
+            event = await shell.finish()
+            assert event["exitCode"] == 0 and shell.output["stdout"] == b"ready\nclosed\n", shell.events
+            await disconnected.wait()
+    finally:
+        if ws is not None:
+            await ws.close()
+        await runner.cleanup()
+
+
+@pytest.mark.proxy_tls
+@pytest.mark.contract("P4")
+async def test_https_credentials_redaction_and_redirect_scope(client, management, request):
+    import ssl
+    from exec_server_spec.tls_fixture import PLACEHOLDER, SYNTHETIC_SECRET
+    headers, original = management
+    tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    tls.load_cert_chain(request.config.getoption("--proxy-tls-cert"), request.config.getoption("--proxy-tls-key"))
+    received = []
+
+    async def upstream(request):
+        received.append((request.path, request.headers.get("Authorization")))
+        if request.path == "/redirect":
+            return web.Response(status=302, headers={"Location": "/not-allowed"})
+        return web.Response(text=request.headers.get("Authorization", "") + "\ncredential-roundtrip")
+
+    app = web.Application()
+    app.router.add_route("*", "/{tail:.*}", upstream)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "127.0.0.1", 0, ssl_context=tls)
+    await site.start()
+    origin = f"https://127.0.0.1:{site._server.sockets[0].getsockname()[1]}"
+    rule = {"origin": origin, "methods": ["GET"], "paths": ["/echo", "/redirect"], "allowCidrs": ["127.0.0.1/32"],
+            "credential": {"header": "Authorization", "placeholder": PLACEHOLDER,
+                           "secretEnv": "EXEC_SERVER_SPEC_SECRET", "prefix": "Bearer "}}
+
+    async def guest(path, header):
+        script = f'''import os,urllib.request,urllib.error
+assert 'EXEC_SERVER_SPEC_SECRET' not in os.environ
+os.environ['no_proxy']=''; os.environ['NO_PROXY']=''
+proxy=os.environ.get('https_proxy') or os.environ['HTTPS_PROXY']
+handler=urllib.request.ProxyHandler({{'https':proxy}})
+request=urllib.request.Request({origin + path!r},headers={{'Authorization':{header!r}}})
+try:
+    with urllib.request.build_opener(handler).open(request,timeout=8) as response:
+        print(response.read().decode())
+except urllib.error.URLError:
+    print('DENIED')
+'''
+        return await client.success(py(script), timeoutMs=12000)
+
+    try:
+        response = await client.request("PUT", "/proxy/api", headers=headers, json={**original, "allow": [rule]})
+        assert response.status == 200, "Start target with the synthetic fixture secret and TLS trust: " + response.text
+        allowed = await guest("/echo", PLACEHOLDER)
+        assert "credential-roundtrip" in allowed["stdout"], "Target must trust the fixture CA: " + str(allowed)
+        assert SYNTHETIC_SECRET not in allowed["stdout"] + allowed["stderr"], "Upstream secret echo leaked"
+        assert received == [("/echo", "Bearer " + SYNTHETIC_SECRET)]
+        assert (await guest("/echo", "wrong"))["stdout"].strip() == "DENIED"
+        assert (await guest("/redirect", PLACEHOLDER))["stdout"].strip() == "DENIED"
+        assert received == [("/echo", "Bearer " + SYNTHETIC_SECRET), ("/redirect", "Bearer " + SYNTHETIC_SECRET)]
+        snapshot = (await client.request("GET", "/proxy/api", headers=headers)).json()
+        assert SYNTHETIC_SECRET not in json.dumps(snapshot)
+        assert any(e["origin"] == origin and e["credentialInjected"] for e in snapshot["events"])
     finally:
         await runner.cleanup()

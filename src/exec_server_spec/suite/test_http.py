@@ -1,4 +1,5 @@
 import asyncio
+import gzip
 
 import pytest
 
@@ -79,7 +80,7 @@ async def test_invalid_exec_request(client, body):
     (b'{"command":"\xff"}', {"Content-Type": "application/json"}, 400),
     (b'{"command":"true","timeoutMs":NaN}', {"Content-Type": "application/json"}, 400),
     (b'{}', {"Content-Type": "text/plain"}, 415),
-    (b'{}', {"Content-Type": "application/json", "Content-Encoding": "gzip"}, 415),
+    (gzip.compress(b'{}'), {"Content-Type": "application/json", "Content-Encoding": "gzip"}, 415),
     (b' ' * 262145, {"Content-Type": "application/json"}, 413)],
     ids=["json", "utf8", "nan", "content-type", "compression", "body-limit"])
 async def test_invalid_http_encoding(client, data, headers, status):

@@ -16,10 +16,12 @@ from .client import Client, RPC, validate_url
 def pytest_addoption(parser):
     group = parser.getgroup("exec-server-conformance")
     group.addoption("--url", help="Loopback HTTP origin of a dedicated running server")
-    group.addoption("--profile", action="append", default=[], choices=["browser", "mounts", "proxy"],
+    group.addoption("--profile", action="append", default=[], choices=["browser", "mounts", "proxy", "proxy-tls"],
                     help="Additional profile to require (repeatable); core always runs")
     group.addoption("--rw-dir", help="Existing writable guest mount directory for mounts profile")
     group.addoption("--ro-dir", help="Existing read-only guest mount directory for mounts profile")
+    group.addoption("--proxy-tls-cert", help="Localhost fixture certificate trusted by the target's upstream TLS client")
+    group.addoption("--proxy-tls-key", help="Matching disposable private key for the local test upstream")
     group.addoption("--deadline", type=float, default=30, help="Per-operation timeout in seconds (default 30)")
     group.addoption("--report", help="Write a machine-readable JSON report; pytest --junitxml also works")
 
@@ -27,6 +29,7 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     for name, description in (("browser", "browser terminal protocol"), ("mounts", "read-only/read-write mounts"),
                               ("proxy", "same-host managed proxy management and HTTP forwarding"),
+                              ("proxy_tls", "HTTPS credential substitution using a disposable trusted upstream"),
                               ("contract", "SPEC.md requirement identifier")):
         config.addinivalue_line("markers", f"{name}: {description}")
     try:
@@ -36,6 +39,13 @@ def pytest_configure(config):
     if config.getoption("--deadline") <= 0:
         raise pytest.UsageError("--deadline must be positive")
     profiles = set(config.getoption("--profile"))
+    if "proxy-tls" in profiles:
+        profiles.add("proxy")
+        config.option.profile = sorted(profiles)
+        for option in ("--proxy-tls-cert", "--proxy-tls-key"):
+            value = config.getoption(option)
+            if not value or not Path(value).is_file():
+                raise pytest.UsageError(f"{option} must name an existing fixture file for proxy-tls")
     if "mounts" in profiles:
         for option in ("--rw-dir", "--ro-dir"):
             value = config.getoption(option)
@@ -51,7 +61,8 @@ def pytest_collection_modifyitems(config, items):
     profiles = set(config.getoption("--profile"))
     selected, deselected = [], []
     for item in items:
-        optional = {name for name in ("browser", "mounts", "proxy") if item.get_closest_marker(name)}
+        optional = {profile for marker, profile in (("browser", "browser"), ("mounts", "mounts"),
+                    ("proxy", "proxy"), ("proxy_tls", "proxy-tls")) if item.get_closest_marker(marker)}
         (selected if optional <= profiles else deselected).append(item)
     items[:] = selected
     config.spec_report["deselected"] += len(deselected)
@@ -63,7 +74,7 @@ def pytest_collection_modifyitems(config, items):
 def pytest_runtest_makereport(item, call):
     result = yield
     report = result.get_result()
-    if report.when == "call" or report.failed:
+    if report.when == "call" or report.failed or report.skipped:
         item.config.spec_report["tests"].append({"id": item.name, "phase": report.when,
             "outcome": report.outcome, "seconds": round(report.duration, 4),
             "requirements": [m.args[0] for m in item.iter_markers("contract")],

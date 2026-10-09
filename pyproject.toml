@@ -3,10 +3,11 @@ name = "exec-server-spec"
 version = "0.1.0"
 description = "Black-box pytest conformance tests for the shared sandbox execution protocol"
 requires-python = ">=3.12"
-dependencies = ["aiohttp>=3.12,<4", "pytest>=8,<10", "pytest-asyncio>=1,<2", "pytest-timeout>=2.3,<3"]
+dependencies = ["aiohttp>=3.12,<4", "pytest>=8,<10", "pytest-asyncio>=1,<2", "pytest-timeout>=2.3,<3", "cryptography>=45,<48"]
 
 [project.scripts]
 exec-server-conformance = "exec_server_spec.runner:main"
+exec-server-proxy-fixture = "exec_server_spec.tls_fixture:main"
 
 [dependency-groups]
 dev = ["ruff>=0.12"]
