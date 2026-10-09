@@ -10,7 +10,7 @@ remote-sandbox-conformance = "remote_sandbox.runner:main"
 remote-sandbox-proxy-fixture = "remote_sandbox.tls_fixture:main"
 
 [dependency-groups]
-dev = ["ruff>=0.12"]
+dev = ["ruff>=0.12", "websockets==17.0.1"]
 
 [build-system]
 requires = ["uv_build>=0.12.9,<0.13"]
@@ -18,7 +18,7 @@ build-backend = "uv_build"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-testpaths = ["tests"]
+testpaths = ["tests", "claude-code/tests"]
 timeout = 90
 
 [tool.ruff.lint]
