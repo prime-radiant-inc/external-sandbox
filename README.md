@@ -7,7 +7,7 @@ This repository is the project home: it contains the implementation-independent 
 | Project | Responsibility | Local directory |
 | --- | --- | --- |
 | `remote-sandbox` | Protocol specification, conformance runner, and overall documentation | `~/dev/prime-radiant-inc/remote-sandbox` |
-| `remote-sandbox-ui` | Shared HTML, CSS, JavaScript, frontend tests, and pinned-bundle updater | `~/dev/prime-radiant-inc/remote-sandbox-ui` |
+| [`remote-sandbox-ui`](https://github.com/prime-radiant-inc/remote-sandbox-ui) | Shared HTML, CSS, JavaScript, frontend tests, and pinned-bundle updater | `~/dev/prime-radiant-inc/remote-sandbox-ui` |
 | [`remote-sandbox-v86`](https://github.com/prime-radiant-inc/remote-sandbox-v86) | TypeScript/Node.js implementation using v86 to run a Linux guest | `~/dev/prime-radiant-inc/remote-sandbox-v86` |
 | [`remote-sandbox-container`](https://github.com/prime-radiant-inc/remote-sandbox-container) | Python implementation using Apple Container to run a Linux guest | `~/dev/prime-radiant-inc/remote-sandbox-container` |
 
