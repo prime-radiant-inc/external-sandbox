@@ -1,6 +1,6 @@
 # Sandbox execution protocol, revision 1
 
-This is the common external contract implemented by `v86-shell-server` at `93e2d9a` (TypeScript/Node.js) and `sandbox-exec-server` at `94d5878` (Python). It describes their existing protocol, not the internal guest transport or a new version of OpenAI's API. The Codex endpoint targets the experimental Codex CLI 0.154.0 exec-server protocol. “MUST” is a conformance requirement; “MAY” permits implementation variation. Requirement IDs identify executable tests and coverage in `COVERAGE.md`.
+This specification defines a localhost execution service with buffered and streaming shell APIs, a Codex-compatible process/filesystem endpoint, and optional browser, mount, and managed-proxy profiles. It specifies observable behavior independently of server language, implementation, or sandbox technology. The Codex endpoint follows the experimental Codex CLI 0.154.0 exec-server wire format. “MUST” is a conformance requirement; “MAY” permits implementation variation. Requirement IDs identify executable tests and coverage in `COVERAGE.md`.
 
 ## 1. Transport and profiles [T1]
 

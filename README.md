@@ -1,6 +1,6 @@
 # exec-server-spec
 
-A compact [wire specification](SPEC.md) and independent Python/pytest conformance runner for `v86-shell-server` and `sandbox-exec-server`. Tests use only public HTTP/WebSocket interfaces and can target any implementation of the contract. See [coverage and limitations](COVERAGE.md).
+A compact [wire specification](SPEC.md) and independent Python/pytest conformance runner for localhost sandbox execution services. Tests use only public HTTP/WebSocket interfaces and can target any implementation of the contract. See [coverage and limitations](COVERAGE.md).
 
 ## Run against a server
 
@@ -28,40 +28,11 @@ uv run exec-server-conformance --url http://127.0.0.1:18787 \
 
 `--deadline SECONDS` sets the per-operation deadline (default 30); pytest's per-test timeout defaults to 90 seconds. Standard pytest flags work, including `-v`, `-x`, `-k`, and `--junitxml`. JSON reports identify the target, profiles, requirements and outcomes; filtered runs are not marked fully conformant. Exit status is pytest's: 0 passed, 1 failures, 2 interrupted, 3 internal error, 4 usage error, 5 no tests. A failed report should remain a failure—do not use xfail to hide an implementation difference.
 
-## Start dedicated instances of our two implementations
+## Prepare the target
 
-From this repository, prepare empty test mounts and a deny-all proxy policy:
+Start a dedicated implementation on an unused loopback port and wait for `/health` to report readiness. For the mounts profile, expose two temporary host directories as `/mnt/spec-rw` (writable) and `/mnt/spec-ro` (read-only). For the proxy profile, start with a deny-all policy (`{"allow": []}`); the tests supply local allow rules as needed and restore the original policy. These launch settings are implementation-specific and are not part of the wire protocol.
 
-```sh
-mkdir -p work/rw work/ro
-printf 'read-only fixture\n' > work/ro/conformance.txt
-printf '{"allow": []}\n' > work/proxy.json
-SPEC_DIR="$PWD"
-```
-
-In a separate terminal, start the Python server (Apple Container must already be running and `python:3.13-slim` available):
-
-```sh
-cd ../sandbox-exec-server
-uv run sandbox-exec-server --port 18787 \
-  --mount-rw "spec-rw=$SPEC_DIR/work/rw" \
-  --mount-ro "spec-ro=$SPEC_DIR/work/ro" \
-  --proxy-config "$SPEC_DIR/work/proxy.json"
-```
-
-Or start the Node server in another terminal:
-
-```sh
-cd ../v86-shell-server/outputs/v86-shell-server
-npm ci
-npm run build
-node dist/cli.js --port 18786 \
-  --mount-rw "spec-rw=$SPEC_DIR/work/rw" \
-  --mount-ro "spec-ro=$SPEC_DIR/work/ro" \
-  --proxy-config "$SPEC_DIR/work/proxy.json"
-```
-
-Set `SPEC_DIR` to this repository's absolute path in each terminal; shell variables do not carry into an unrelated terminal. Wait until the server reports readiness, then use the full test command above with the matching port. Ports are examples; choose unused ones. Shut down these dedicated servers with Ctrl-C when done. On failure, temporary files may remain if the server is unavailable during cleanup; all runner-created files use the `exec-server-spec-` prefix.
+Shut down the dedicated server after testing. If it becomes unavailable during cleanup, guest scratch files may remain; all runner-created scratch files/directories use the `exec-server-spec-` prefix.
 
 ## Develop and distribute
 
@@ -78,4 +49,4 @@ uvx --from /absolute/path/to/exec_server_spec-0.1.0-py3-none-any.whl \
   exec-server-conformance --url http://127.0.0.1:8687 -q
 ```
 
-Direct pytest invocation is also supported: `uv run pytest -p exec_server_spec.plugin src/exec_server_spec/suite --url http://127.0.0.1:8687`. `SPEC.md` records the contract derived from v86 commit `93e2d9a` and Python commit `94d5878`; server CLI flags, VM/container internals, browser layout and backend-specific security guarantees are outside the common wire contract.
+Direct pytest invocation is also supported: `uv run pytest -p exec_server_spec.plugin src/exec_server_spec/suite --url http://127.0.0.1:8687`. Server launch flags, guest transport, sandbox internals, browser layout and backend-specific security guarantees are outside this wire contract.
