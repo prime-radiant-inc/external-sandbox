@@ -2,11 +2,11 @@
 
 Remote Sandbox provides a common interface for running commands and working with files inside isolated Linux environments. Clients use the same HTTP and WebSocket protocol with either a v86 virtual machine or an Apple Container backend. A shared browser UI provides a terminal and a managed-network policy editor.
 
-This repository is the project home: it contains the implementation-independent [protocol specification](SPEC.md), a Python/pytest conformance runner, the shared [Claude Code shell prefix and streaming client](claude-code/README.md), and [Codex setup instructions](codex/README.md). The implementations and UI have their own repositories and release independently.
+This repository is the project home: it contains the implementation-independent [protocol specification](SPEC.md), a Python/pytest conformance runner, the shared [Claude Code shell prefix and streaming client](claude-code/README.md), [Codex setup instructions](codex/README.md), and the [Pi extension](pi/README.md). The implementations and UI have their own repositories and release independently.
 
 | Project | Responsibility | Local directory |
 | --- | --- | --- |
-| `remote-sandbox` | Protocol specification, conformance runner, Claude Code client, Codex setup, and overall documentation | `~/dev/prime-radiant-inc/remote-sandbox` |
+| `remote-sandbox` | Protocol specification, conformance runner, agent integrations, and overall documentation | `~/dev/prime-radiant-inc/remote-sandbox` |
 | [`remote-sandbox-ui`](https://github.com/prime-radiant-inc/remote-sandbox-ui) | Shared HTML, CSS, JavaScript, frontend tests, and pinned-bundle updater | `~/dev/prime-radiant-inc/remote-sandbox-ui` |
 | [`remote-sandbox-v86`](https://github.com/prime-radiant-inc/remote-sandbox-v86) | TypeScript/Node.js implementation using v86 to run a Linux guest | `~/dev/prime-radiant-inc/remote-sandbox-v86` |
 | [`remote-sandbox-container`](https://github.com/prime-radiant-inc/remote-sandbox-container) | Python implementation using Apple Container to run a Linux guest | `~/dev/prime-radiant-inc/remote-sandbox-container` |
