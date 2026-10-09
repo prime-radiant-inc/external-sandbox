@@ -1,0 +1,1090 @@
+{
+  "specRevision": 1,
+  "startedAt": "2026-10-09T18:52:54.628488+00:00",
+  "url": "http://127.0.0.1:18786",
+  "profiles": [
+    "core",
+    "browser",
+    "mounts",
+    "proxy",
+    "proxy-tls"
+  ],
+  "tests": [
+    {
+      "id": "test_http_access_checks[GET-/health-headers0]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0011,
+      "requirements": [
+        "T1"
+      ]
+    },
+    {
+      "id": "test_http_access_checks[POST-/exec-headers1]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0007,
+      "requirements": [
+        "T1"
+      ]
+    },
+    {
+      "id": "test_http_access_checks[GET-/mounts-headers2]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "T1"
+      ]
+    },
+    {
+      "id": "test_cross_origin_websocket_rejected[/codex]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0007,
+      "requirements": [
+        "T1"
+      ]
+    },
+    {
+      "id": "test_cross_origin_websocket_rejected[/exec/ws]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0009,
+      "requirements": [
+        "T1"
+      ]
+    },
+    {
+      "id": "test_browser_token_handshake_and_execution",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0206,
+      "requirements": [
+        "B1"
+      ]
+    },
+    {
+      "id": "test_browser_authorization_rejects_invalid_handshake[headers0-protocols0]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "B2"
+      ]
+    },
+    {
+      "id": "test_browser_authorization_rejects_invalid_handshake[headers1-protocols1]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "B2"
+      ]
+    },
+    {
+      "id": "test_browser_authorization_rejects_invalid_handshake[headers2-protocols2]",
+      "phase": "call",
+      "outcome": "failed",
+      "seconds": 0.0007,
+      "requirements": [
+        "B2"
+      ],
+      "failure": "client = <exec_server_spec.client.Client object at 0x10a4b9c50>\nheaders = {'Sec-Fetch-Site': 'same-origin'}, protocols = []\n\n    @pytest.mark.browser\n    @pytest.mark.contract(\"B2\")\n    @pytest.mark.parametrize(\"headers,protocols\", [\n        ({\"Origin\": \"same\"}, []), ({\"Origin\": \"same\"}, [\"sandbox-terminal\", \"sandbox-token.wrong\"]),\n        ({\"Sec-Fetch-Site\": \"same-origin\"}, []),\n        ({\"Origin\": \"same\", \"Sec-Fetch-Site\": \"cross-site\"}, [])])\n    async def test_browser_authorization_rejects_invalid_handshake(client, headers, protocols):\n        headers = {k: client.url if v == \"same\" else v for k, v in headers.items()}\n        try:\n            ws = await client.ws(\"/exec/ws\", headers=headers, protocols=protocols)\n        except aiohttp.WSServerHandshakeError as error:\n            assert error.status == 403\n        else:\n            await ws.close()\n>           pytest.fail(\"Unauthorized browser WebSocket was accepted\")\nE           Failed: Unauthorized browser WebSocket was accepted\n\n/Users/simon/.cache/uv/archive-v0/nzXmXCQQuiisC29d/lib/python3.14/site-packages/exec_server_spec/suite/test_access.py:64: Failed"
+    },
+    {
+      "id": "test_browser_authorization_rejects_invalid_handshake[headers3-protocols3]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0008,
+      "requirements": [
+        "B2"
+      ]
+    },
+    {
+      "id": "test_browser_pages_and_legacy_routes_reject_origins",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0017,
+      "requirements": [
+        "B2"
+      ]
+    },
+    {
+      "id": "test_handshake_and_error_recovery",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.002,
+      "requirements": [
+        "C1"
+      ]
+    },
+    {
+      "id": "test_session_resume_rejected",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0008,
+      "requirements": [
+        "C1"
+      ]
+    },
+    {
+      "id": "test_literal_argv_binary_output_and_replay",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.1652,
+      "requirements": [
+        "C2"
+      ]
+    },
+    {
+      "id": "test_env_policy_and_arg0",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0491,
+      "requirements": [
+        "C2"
+      ]
+    },
+    {
+      "id": "test_write_deduplication_and_statuses",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.1643,
+      "requirements": [
+        "C3"
+      ]
+    },
+    {
+      "id": "test_signal_and_terminate[process/signal-params0-130]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0522,
+      "requirements": [
+        "C4"
+      ]
+    },
+    {
+      "id": "test_signal_and_terminate[process/terminate-params1-137]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0223,
+      "requirements": [
+        "C4"
+      ]
+    },
+    {
+      "id": "test_codex_disconnect_cancels",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0624,
+      "requirements": [
+        "C4"
+      ]
+    },
+    {
+      "id": "test_invalid_process_start[pty]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0007,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_invalid_process_start[tty-null]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_invalid_process_start[snapshot]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_invalid_process_start[sandbox]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_invalid_process_start[network]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_invalid_process_start[empty-argv]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_invalid_process_start[empty-executable]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0007,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_invalid_process_start[nul]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_invalid_process_start[env]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_invalid_process_start[stdin]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0009,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_invalid_process_start[cwd-uri]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_invalid_process_start[env-policy]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_process_ids_and_invalid_write",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0113,
+      "requirements": [
+        "C5"
+      ]
+    },
+    {
+      "id": "test_replay_reports_eviction",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 1.3211,
+      "requirements": [
+        "L1"
+      ]
+    },
+    {
+      "id": "test_multiple_processes_share_one_session_without_mixing_output",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.1342,
+      "requirements": [
+        "C2"
+      ]
+    },
+    {
+      "id": "test_initialized_notification_is_required",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0015,
+      "requirements": [
+        "C1"
+      ]
+    },
+    {
+      "id": "test_file_roundtrip_metadata_directory_and_canonicalization",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.4691,
+      "requirements": [
+        "F1"
+      ]
+    },
+    {
+      "id": "test_immutable_snapshot_offsets_close_and_session_scope",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0082,
+      "requirements": [
+        "F2"
+      ]
+    },
+    {
+      "id": "test_directories_copy_walk_and_remove",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.1053,
+      "requirements": [
+        "F3"
+      ]
+    },
+    {
+      "id": "test_symlink_and_hidden_walk_semantics",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0756,
+      "requirements": [
+        "F4"
+      ]
+    },
+    {
+      "id": "test_invalid_file_uris[path-not-uri]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "F5"
+      ]
+    },
+    {
+      "id": "test_invalid_file_uris[scheme]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "F5"
+      ]
+    },
+    {
+      "id": "test_invalid_file_uris[authority]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "F5"
+      ]
+    },
+    {
+      "id": "test_invalid_file_uris[query]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "F5"
+      ]
+    },
+    {
+      "id": "test_invalid_file_uris[fragment]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "F5"
+      ]
+    },
+    {
+      "id": "test_invalid_file_uris[encoded-slash]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0008,
+      "requirements": [
+        "F5"
+      ]
+    },
+    {
+      "id": "test_invalid_file_uris[escape]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "F5"
+      ]
+    },
+    {
+      "id": "test_invalid_file_uris[control]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "F5"
+      ]
+    },
+    {
+      "id": "test_invalid_file_uris[backslash]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "F5"
+      ]
+    },
+    {
+      "id": "test_filesystem_errors_are_explicit",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0038,
+      "requirements": [
+        "F5"
+      ]
+    },
+    {
+      "id": "test_discovery",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0009,
+      "requirements": [
+        "T1"
+      ]
+    },
+    {
+      "id": "test_buffered_streams_exit_stdin_env_and_cwd",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.043,
+      "requirements": [
+        "H1"
+      ]
+    },
+    {
+      "id": "test_buffered_empty_stdin_is_eof_and_invalid_utf8_is_replaced",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0416,
+      "requirements": [
+        "H1"
+      ]
+    },
+    {
+      "id": "test_shell_state_is_fresh_but_files_persist",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.078,
+      "requirements": [
+        "H1"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[null]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0008,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[array]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.001,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[missing-command]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0009,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[blank]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0008,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[number]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[nul]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[command-limit]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0008,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[unknown-field]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[relative-cwd]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[cwd-limit]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[env-array]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[env-name]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[env-type]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[env-nul]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[env-count]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0007,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[env-limit]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[stdin-limit]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0007,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[stdin-type]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[timeout-zero]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[timeout-limit]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[timeout-bool]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[timeout-fraction]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0008,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[output-zero]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0004,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_exec_request[output-limit]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0004,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_http_encoding[json]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_http_encoding[utf8]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_http_encoding[nan]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_http_encoding[content-type]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0005,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_http_encoding[compression]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_invalid_http_encoding[body-limit]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0006,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_http_routes_and_execution_error",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0415,
+      "requirements": [
+        "H2"
+      ]
+    },
+    {
+      "id": "test_exec_limits[timedOut-sleep 60-options0]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.1036,
+      "requirements": [
+        "H3"
+      ]
+    },
+    {
+      "id": "test_exec_limits[outputLimitExceeded-python3 -c 'import os; os.write(1,b'\"'\"'x'\"'\"'*8192)'-options1]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.1815,
+      "requirements": [
+        "H3"
+      ]
+    },
+    {
+      "id": "test_concurrent_requests_are_independent",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.1489,
+      "requirements": [
+        "H4"
+      ]
+    },
+    {
+      "id": "test_http_disconnect_cancels_process",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.1035,
+      "requirements": [
+        "H4"
+      ]
+    },
+    {
+      "id": "test_mount_modes_through_shell_and_filesystem",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.1232,
+      "requirements": [
+        "M1"
+      ]
+    },
+    {
+      "id": "test_proxy_access_and_atomic_policy_validation",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0047,
+      "requirements": [
+        "P1"
+      ]
+    },
+    {
+      "id": "test_proxy_http_rules_activity_and_live_revocation",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 5.2507,
+      "requirements": [
+        "P3",
+        "P2"
+      ]
+    },
+    {
+      "id": "test_live_policy_update_revokes_existing_stream",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.8133,
+      "requirements": [
+        "P2"
+      ]
+    },
+    {
+      "id": "test_https_credentials_redaction_and_redirect_scope",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 3.4634,
+      "requirements": [
+        "P4"
+      ]
+    },
+    {
+      "id": "test_binary_streaming_with_incremental_input_and_eof",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.3195,
+      "requirements": [
+        "S2",
+        "S1"
+      ]
+    },
+    {
+      "id": "test_stream_termination[cancel]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0419,
+      "requirements": [
+        "S3"
+      ]
+    },
+    {
+      "id": "test_stream_termination[timeout]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.1047,
+      "requirements": [
+        "S3"
+      ]
+    },
+    {
+      "id": "test_stream_termination[output]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.1596,
+      "requirements": [
+        "S3"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_start[first-message]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0011,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_start[stdin-type]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0008,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_start[unknown-field]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0009,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_start[array]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0011,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_start[json]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0007,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_start[binary-frame]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0007,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_message[duplicate-start]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0087,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_message[unknown-type]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0097,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_message[id]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.008,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_message[base64-padding]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0073,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_message[base64-bits]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0076,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_message[chunk-limit]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0074,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_message[stdin-fields]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.007,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_invalid_stream_message[cancel-fields]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0078,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_stdin_lifecycle_validation[duplicate-id]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.011,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_stdin_lifecycle_validation[disabled]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0086,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_stdin_lifecycle_validation[after-eof]",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0111,
+      "requirements": [
+        "S4"
+      ]
+    },
+    {
+      "id": "test_stream_disconnect_cancels",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 0.0611,
+      "requirements": [
+        "S5"
+      ]
+    },
+    {
+      "id": "test_stream_requires_start_before_deadline",
+      "phase": "call",
+      "outcome": "passed",
+      "seconds": 10.0027,
+      "requirements": [
+        "S5"
+      ]
+    }
+  ],
+  "deselected": 0,
+  "server": {
+    "status": "ready",
+    "backend": "v86",
+    "architecture": "i686",
+    "shell": "/bin/bash",
+    "network": "managed-http",
+    "packages": [],
+    "mounts": [
+      {
+        "name": "spec-rw",
+        "hostPath": "/Users/simon/Dropbox/dev/prime-radiant-inc/sandboxing/exec-server-spec/work/rw",
+        "mode": "rw",
+        "guestPath": "/mnt/spec-rw"
+      },
+      {
+        "name": "spec-ro",
+        "hostPath": "/Users/simon/Dropbox/dev/prime-radiant-inc/sandboxing/exec-server-spec/work/ro",
+        "mode": "ro",
+        "guestPath": "/mnt/spec-ro"
+      }
+    ],
+    "defaultCwd": "/mnt/spec-rw",
+    "activeCommands": 0
+  },
+  "exitCode": 1,
+  "finishedAt": "2026-10-09T18:53:21.538441+00:00",
+  "completeSelection": true,
+  "conforms": false
+}

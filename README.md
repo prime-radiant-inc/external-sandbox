@@ -1,6 +1,6 @@
 # exec-server-spec
 
-A compact [wire specification](SPEC.md) and independent Python/pytest conformance runner for localhost sandbox execution services. Tests use only public HTTP/WebSocket interfaces and can target any implementation of the contract. See [coverage and limitations](COVERAGE.md).
+A compact [wire specification](SPEC.md) and independent Python/pytest conformance runner for localhost sandbox execution services. Tests use only public HTTP/WebSocket interfaces and can target any implementation of the contract. See [coverage and limitations](COVERAGE.md) and [sample implementation results](verification/README.md).
 
 ## Run against a server
 
