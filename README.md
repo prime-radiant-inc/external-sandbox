@@ -1,6 +1,21 @@
-# exec-server-spec
+# Remote Sandbox
 
-A compact [wire specification](SPEC.md) and independent Python/pytest conformance runner for localhost sandbox execution services. Tests use only public HTTP/WebSocket interfaces and can target any implementation of the contract. See [coverage and limitations](COVERAGE.md) and [sample implementation results](verification/README.md).
+Remote Sandbox provides a common interface for running commands and working with files inside isolated Linux environments. Clients use the same HTTP and WebSocket protocol with either a v86 virtual machine or an Apple Container backend. A shared browser UI provides a terminal and a managed-network policy editor.
+
+This repository is the project home: it contains the implementation-independent [protocol specification](SPEC.md), a Python/pytest conformance runner, and this overview. The implementations and UI have their own repositories and release independently.
+
+| Project | Responsibility | Local directory |
+| --- | --- | --- |
+| `remote-sandbox` | Protocol specification, conformance runner, and overall documentation | `~/dev/prime-radiant-inc/remote-sandbox` |
+| `remote-sandbox-ui` | Shared HTML, CSS, JavaScript, frontend tests, and pinned-bundle updater | `~/dev/prime-radiant-inc/remote-sandbox-ui` |
+| [`remote-sandbox-v86`](https://github.com/prime-radiant-inc/remote-sandbox-v86) | TypeScript/Node.js implementation using v86 to run a Linux guest | `~/dev/prime-radiant-inc/remote-sandbox-v86` |
+| [`remote-sandbox-container`](https://github.com/prime-radiant-inc/remote-sandbox-container) | Python implementation using Apple Container to run a Linux guest | `~/dev/prime-radiant-inc/remote-sandbox-container` |
+
+The core protocol covers discovery, buffered and streaming command execution, and a Codex-compatible process/filesystem endpoint. Optional browser, mount, and managed-proxy profiles add explicit requirements. Each implementation owns its execution backend, lifecycle, file mounts, and authorization. The UI owns presentation; each server bundles a pinned UI release, injects its own branding and tokens, and serves the files from the same origin. Installed servers do not need a sibling UI checkout or Git submodules.
+
+Choose an implementation and follow its README to start a server. Ports remain implementation-specific: the current v86 examples use 8686 and container examples use 8687. The conformance runner below targets either implementation using only its public interfaces. See [coverage and limitations](COVERAGE.md) and [historical implementation results](verification/README.md); those results describe the exact commits tested and are not a claim that every later revision has passed every profile.
+
+The project rename changes repository, package, module, command, and documentation names. It does not change the protocol endpoints, message fields, browser WebSocket subprotocols, or proxy authentication headers in [SPEC.md](SPEC.md).
 
 ## Run against a server
 
@@ -8,7 +23,7 @@ Requirements: Python 3.12+, `uv`, and a dedicated running server whose guest has
 
 ```sh
 uv sync --locked
-uv run exec-server-conformance --url http://127.0.0.1:8687 -q
+uv run remote-sandbox-conformance --url http://127.0.0.1:8687 -q
 ```
 
 Default **core** checks discovery, HTTP execution, streaming execution, Codex process/filesystem RPC, and access rejection. Optional profiles are explicit requirements; a missing dependency or endpoint fails rather than silently skips:
@@ -21,7 +36,7 @@ Default **core** checks discovery, HTTP execution, streaming execution, Codex pr
 | `--profile proxy` | Proxy-enabled target; runner and server must share a host so the proxy can reach a synthetic loopback upstream. Temporarily replaces policy and restores it afterward. |
 
 ```sh
-uv run exec-server-conformance --url http://127.0.0.1:18787 \
+uv run remote-sandbox-conformance --url http://127.0.0.1:18787 \
   --profile browser --profile mounts --profile proxy \
   --rw-dir /mnt/spec-rw --ro-dir /mnt/spec-ro \
   --report work/python.json --junitxml work/python.xml -q
@@ -33,22 +48,22 @@ uv run exec-server-conformance --url http://127.0.0.1:18787 \
 
 Start a dedicated implementation on an unused loopback port and wait for `/health` to report readiness. For the mounts profile, expose two temporary host directories as `/mnt/spec-rw` (writable) and `/mnt/spec-ro` (read-only). For the proxy profile, start with a deny-all policy (`{"allow": []}`); the tests supply local allow rules as needed and restore the original policy. These launch settings are implementation-specific and are not part of the wire protocol.
 
-Shut down the dedicated server after testing. If it becomes unavailable during cleanup, guest scratch files may remain; all runner-created scratch files/directories use the `exec-server-spec-` prefix.
+Shut down the dedicated server after testing. If it becomes unavailable during cleanup, guest scratch files may remain; all runner-created scratch files/directories use the `remote-sandbox-` prefix.
 
 ## Optional HTTPS proxy fixture
 
 The HTTPS profile uses a synthetic host secret and a temporary localhost upstream certificate. Generate them with:
 
 ```sh
-uv run exec-server-proxy-fixture work/tls
+uv run remote-sandbox-proxy-fixture work/tls
 ```
 
-Before starting the dedicated target, source `work/tls/server-env.sh` in its launch shell. This sets `EXEC_SERVER_SPEC_SECRET` to a synthetic test value and supplies `SSL_CERT_FILE` / `NODE_EXTRA_CA_CERTS` for runtimes that support those trust settings. Other implementations must be configured to trust `work/tls/cert.pem` for upstream TLS and expose the same synthetic secret to their policy engine. This trust is scoped to the target process; do not install the certificate in the host trust store. The certificate expires after seven days; use a fresh directory to regenerate it.
+Before starting the dedicated target, source `work/tls/server-env.sh` in its launch shell. This sets `REMOTE_SANDBOX_SPEC_SECRET` to a synthetic test value and supplies `SSL_CERT_FILE` / `NODE_EXTRA_CA_CERTS` for runtimes that support those trust settings. Other implementations must be configured to trust `work/tls/cert.pem` for upstream TLS and expose the same synthetic secret to their policy engine. This trust is scoped to the target process; do not install the certificate in the host trust store. The certificate expires after seven days; use a fresh directory to regenerate it.
 
 Then include the profile when invoking the runner:
 
 ```sh
-uv run exec-server-conformance --url http://127.0.0.1:18787 \
+uv run remote-sandbox-conformance --url http://127.0.0.1:18787 \
   --profile browser --profile mounts --profile proxy-tls \
   --rw-dir /mnt/spec-rw --ro-dir /mnt/spec-ro \
   --proxy-tls-cert work/tls/cert.pem --proxy-tls-key work/tls/key.pem \
@@ -68,8 +83,8 @@ uv build
 The executable and full pytest suite ship in the wheel, so it also works outside the source checkout:
 
 ```sh
-uvx --from /absolute/path/to/exec_server_spec-0.1.0-py3-none-any.whl \
-  exec-server-conformance --url http://127.0.0.1:8687 -q
+uvx --from /absolute/path/to/remote_sandbox-0.1.0-py3-none-any.whl \
+  remote-sandbox-conformance --url http://127.0.0.1:8687 -q
 ```
 
-Direct pytest invocation is also supported: `uv run pytest -p exec_server_spec.plugin src/exec_server_spec/suite --url http://127.0.0.1:8687`. Server launch flags, guest transport, sandbox internals, browser layout and backend-specific security guarantees are outside this wire contract.
+Direct pytest invocation is also supported: `uv run pytest -p remote_sandbox.plugin src/remote_sandbox/suite --url http://127.0.0.1:8687`. Server launch flags, guest transport, sandbox internals, browser layout and backend-specific security guarantees are outside this wire contract.

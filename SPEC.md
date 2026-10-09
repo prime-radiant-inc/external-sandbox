@@ -1,4 +1,4 @@
-# Sandbox execution protocol, revision 1
+# Remote Sandbox protocol, revision 1
 
 This specification defines a localhost execution service with buffered and streaming shell APIs, a Codex-compatible process/filesystem endpoint, and optional browser, mount, and managed-proxy profiles. It specifies observable behavior independently of server language, implementation, or sandbox technology. The Codex endpoint follows the experimental Codex CLI 0.154.0 exec-server wire format. “MUST” is a conformance requirement; “MAY” permits implementation variation. Requirement IDs identify executable tests and coverage in `COVERAGE.md`.
 

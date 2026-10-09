@@ -3,7 +3,7 @@ import uuid
 
 import pytest
 
-from exec_server_spec.client import RPCError, b64, unb64, uri
+from remote_sandbox.client import RPCError, b64, unb64, uri
 
 pytestmark = [pytest.mark.mounts, pytest.mark.contract("M1")]
 
@@ -15,7 +15,7 @@ async def test_mount_modes_through_shell_and_filesystem(client, rpc, request):
     mounts = response.json()["mounts"]
     for path, mode in ((rw, "rw"), (ro, "ro")):
         assert any(m["mode"] == mode and path == m["guestPath"] for m in mounts), (path, mode, mounts)
-    name = "exec-server-spec-" + uuid.uuid4().hex
+    name = "remote-sandbox-" + uuid.uuid4().hex
     rwfile, rofile = rw + "/" + name, ro + "/" + name
     try:
         await rpc.call("fs/writeFile", {"path": uri(rwfile), "dataBase64": b64(b"rpc")})

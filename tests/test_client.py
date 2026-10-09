@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import aiohttp
 import pytest
 
-from exec_server_spec.client import Client, RPC, RPCError, Shell, result_shape, token, unb64, validate_url
+from remote_sandbox.client import Client, RPC, RPCError, Shell, result_shape, token, unb64, validate_url
 
 
 class Socket:
@@ -79,7 +79,7 @@ def test_exit_must_have_exactly_one_status():
 
 
 def test_additional_response_fields_are_allowed():
-    from exec_server_spec.client import assert_fields
+    from remote_sandbox.client import assert_fields
     assert_fields({"status": "ready", "extension": 1}, {"status": "ready"})
     with pytest.raises(AssertionError):
         assert_fields({"ready": 1}, {"ready": True})
@@ -88,7 +88,7 @@ def test_additional_response_fields_are_allowed():
 def test_tls_fixture_is_disposable_and_refuses_overwrite(tmp_path):
     import stat
     from cryptography import x509
-    from exec_server_spec.tls_fixture import generate
+    from remote_sandbox.tls_fixture import generate
     directory = generate(tmp_path / "tls")
     cert = x509.load_pem_x509_certificate((directory / "cert.pem").read_bytes())
     assert "127.0.0.1" in str(cert.extensions.get_extension_for_class(x509.SubjectAlternativeName).value)

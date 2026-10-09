@@ -1,7 +1,7 @@
 import aiohttp
 import pytest
 
-from exec_server_spec.client import Shell, token
+from remote_sandbox.client import Shell, token
 
 
 @pytest.mark.contract("T1")

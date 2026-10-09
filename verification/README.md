@@ -2,6 +2,8 @@
 
 These are observations about two implementations, not part of the implementation-neutral [protocol definition](../SPEC.md). They were recorded on October 9, 2026, on macOS arm64, using dedicated loopback instances, temporary mounts, a deny-all initial proxy policy, and the generated localhost TLS fixture. Both services ran real Linux guests; no fake execution backend or coding-model call was used.
 
+These historical reports retain their original project names and command paths. The projects are now named `remote-sandbox-container` and `remote-sandbox-v86`, and this runner is `remote-sandbox`. The reproduction commands below use the current command name; the archived JSON and recorded commits are unchanged.
+
 | Target | Code tested | Full profile result | Report |
 | --- | --- | --- | --- |
 | `sandbox-exec-server` (Python / Apple Container) | `94d5878` | **116 passed**, exit 0 | [python.json](python.json) |
@@ -18,14 +20,14 @@ The Node handler classifies requests as browser requests only when Origin is pre
 To reproduce just this case against a running implementation:
 
 ```sh
-uv run exec-server-conformance --url http://127.0.0.1:18786 \
+uv run remote-sandbox-conformance --url http://127.0.0.1:18786 \
   --profile browser -k 'invalid_handshake and headers2' -v
 ```
 
 For the complete run, start a dedicated service exposing writable `/mnt/spec-rw` and read-only `/mnt/spec-ro`, enable the deny-all proxy, and configure upstream TLS trust and the synthetic secret as described in the [runner instructions](../README.md#optional-https-proxy-fixture). Then run:
 
 ```sh
-uv run exec-server-conformance --url http://127.0.0.1:18786 \
+uv run remote-sandbox-conformance --url http://127.0.0.1:18786 \
   --profile browser --profile mounts --profile proxy-tls \
   --rw-dir /mnt/spec-rw --ro-dir /mnt/spec-ro \
   --proxy-tls-cert work/tls/cert.pem --proxy-tls-key work/tls/key.pem \

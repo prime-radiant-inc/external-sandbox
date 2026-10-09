@@ -2,7 +2,7 @@ import shlex
 
 import pytest
 
-from exec_server_spec.client import assert_fields, RPCError, b64, unb64, uri
+from remote_sandbox.client import assert_fields, RPCError, b64, unb64, uri
 
 
 @pytest.mark.contract("F1")
@@ -35,7 +35,7 @@ async def test_immutable_snapshot_offsets_close_and_session_scope(rpc, client, s
     assert_fields(await rpc.call("fs/readBlock", {"handleId": "snapshot", "offset": 3, "len": 99}), {"chunk": b64(b"ginal"), "eof": True})
     assert_fields(await rpc.call("fs/readBlock", {"handleId": "snapshot", "offset": 99, "len": 2}), {"chunk": "", "eof": True})
     assert_fields(await rpc.call("fs/readBlock", {"handleId": "snapshot", "offset": 0, "len": 0}), {"chunk": "", "eof": False})
-    from exec_server_spec.client import RPC
+    from remote_sandbox.client import RPC
     ws = await client.ws("/codex")
     try:
         other = RPC(client, ws)

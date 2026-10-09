@@ -10,8 +10,8 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 
-SYNTHETIC_SECRET = "exec-server-spec-synthetic-secret-not-a-real-key"
-PLACEHOLDER = "Bearer exec-server-spec-public-placeholder"
+SYNTHETIC_SECRET = "remote-sandbox-synthetic-secret-not-a-real-key"
+PLACEHOLDER = "Bearer remote-sandbox-public-placeholder"
 
 
 def generate(directory):
@@ -38,7 +38,7 @@ def generate(directory):
     cert = shlex.quote(str(directory / "cert.pem"))
     (directory / "server-env.sh").write_text(
         "# Source only in the shell launching a disposable conformance target.\n"
-        f"export EXEC_SERVER_SPEC_SECRET={shlex.quote(SYNTHETIC_SECRET)}\n"
+        f"export REMOTE_SANDBOX_SPEC_SECRET={shlex.quote(SYNTHETIC_SECRET)}\n"
         f"export SSL_CERT_FILE={cert}\nexport NODE_EXTRA_CA_CERTS={cert}\n")
     return directory
 

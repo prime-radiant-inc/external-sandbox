@@ -3,7 +3,7 @@ import gzip
 
 import pytest
 
-from exec_server_spec.client import py
+from remote_sandbox.client import py
 
 
 @pytest.mark.contract("T1")
