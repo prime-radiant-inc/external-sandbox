@@ -1,0 +1,17 @@
+{
+  "name": "remote-sandbox-pi",
+  "version": "0.1.0",
+  "description": "Run Pi coding tools and user shell commands through the Remote Sandbox protocol",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22.19.0" },
+  "files": ["index.ts", "*.mjs", "README.md"],
+  "pi": { "extensions": ["./index.ts"] },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "test:integration": "node --test tests/*.integration.mjs"
+  },
+  "dependencies": { "ws": "^8.21.3" },
+  "peerDependencies": { "@earendil-works/pi-coding-agent": ">=0.85.1 <0.86.0" },
+  "devDependencies": { "@earendil-works/pi-coding-agent": "0.85.1" }
+}
