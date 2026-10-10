@@ -1,6 +1,6 @@
 # Pi integration for Remote Sandbox
 
-Run Pi's `bash`, `read`, `write`, `edit`, `grep`, `find`, and `ls` tools through the shared Remote Sandbox WebSocket API. Both `!command` and `!!command` use the same remote execution route. Pi, its model connection, and its session files stay on the host. The extension belongs to this repository's `pi/` directory and uses neither backend's implementation code.
+Run Pi's `bash`, `read`, `write`, `edit`, `grep`, `find`, and `ls` tools through the shared Remote Sandbox WebSocket API. Both `!command` and `!!command` use the same remote execution route. Pi, its model connection, and its session files stay on the host. The extension belongs to this repository's `pi/` directory and uses no backend's implementation code.
 
 Tested with `@earendil-works/pi-coding-agent` **0.85.1**, Node.js 26, the Apple Container server on port **8687**, and the Quicksand server on port **8688**. Node.js **22.19 or newer** is required. The guest needs Bash and Python **3.12+**; `find` and `grep` also require `rg`. The container backend's [developer image](https://github.com/prime-radiant-inc/remote-sandbox-container/blob/main/examples/Containerfile), commonly tagged `sandbox-demo:latest`, and the Quicksand backend's default Alpine image include all three. The container backend's minimal default Python image does not include ripgrep. A v86 guest must also provide these utilities.
 
@@ -76,7 +76,7 @@ To create an npm tarball:
 npm pack
 ```
 
-An extracted tarball can be used with `npm install --ignore-scripts` followed by the explicit `pi -e ./index.ts` launch shown above. Neither backend bundles or installs this separate Node package.
+An extracted tarball can be used with `npm install --ignore-scripts` followed by the explicit `pi -e ./index.ts` launch shown above. No backend bundles or installs this separate Node package.
 
 ## Verification
 
