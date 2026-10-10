@@ -1,6 +1,6 @@
 # Claude Code shell prefix
 
-One shared shell prefix and streaming client for both [Remote Sandbox v86](https://github.com/prime-radiant-inc/remote-sandbox-v86) and [Remote Sandbox Container](https://github.com/prime-radiant-inc/remote-sandbox-container). The wrapper sends Claude's complete command to the chosen server's `/exec/ws` endpoint without evaluating or reconstructing it on the host. The server executes it inside its Linux guest. This folder is the source of truth; backend packages do not include their own copies.
+One shared shell prefix and streaming client for [Remote Sandbox v86](https://github.com/prime-radiant-inc/remote-sandbox-v86), [Remote Sandbox Container](https://github.com/prime-radiant-inc/remote-sandbox-container), and [Remote Sandbox Quicksand](https://github.com/prime-radiant-inc/remote-sandbox-quicksand). The wrapper sends Claude's complete command to the chosen server's `/exec/ws` endpoint without evaluating or reconstructing it on the host. The server executes it inside its Linux guest. This folder is the source of truth; backend packages do not include their own copies.
 
 ## Get the client
 
@@ -15,7 +15,7 @@ PREFIX_DIR="$(cd remote-sandbox/claude-code && pwd)"
 
 Keep `claude-shell-prefix.sh` beside `remote_sandbox_exec.py`. For the buffered alternative, keep `claude-shell-prefix-http.sh` beside `api-exec.mjs`. You can copy this folder elsewhere while preserving executable permissions. These files are used directly from the folder; installing the conformance-runner wheel does not install a shell-prefix command.
 
-With a server running and a project mounted, warm the streaming client's dependency and check the connection. Select the v86 server on port 8686 or the container server on port 8687 explicitly:
+With a server running and a project mounted, warm the streaming client's dependency and check the connection. Select the v86 server on port 8686, the container server on port 8687, or the Quicksand server on port 8688 explicitly:
 
 ```sh
 # v86 server
@@ -25,9 +25,13 @@ REMOTE_SANDBOX_API_URL=http://127.0.0.1:8686 REMOTE_SANDBOX_CWD=/mnt/project \
 # Apple Container server
 REMOTE_SANDBOX_API_URL=http://127.0.0.1:8687 REMOTE_SANDBOX_CWD=/mnt/project \
   "$PREFIX_DIR/claude-shell-prefix.sh" --no-stdin 'uname -m; pwd'
+
+# Quicksand server
+REMOTE_SANDBOX_API_URL=http://127.0.0.1:8688 REMOTE_SANDBOX_CWD=/mnt/project \
+  "$PREFIX_DIR/claude-shell-prefix.sh" --no-stdin 'uname -m; pwd'
 ```
 
-## Launch Claude with either backend
+## Launch Claude with any backend
 
 Build or install your chosen server using its own README first. Start it with the project writable and its absolute host path preserved inside the guest. From the project directory, use one of these examples in a separate terminal:
 
@@ -40,6 +44,11 @@ node "$V86_APP/dist/cli.js" --port 8686 --preserve-paths --mount-rw "project=$PW
 CONTAINER_APP=/absolute/path/to/remote-sandbox-container
 uv run --project "$CONTAINER_APP" remote-sandbox-container \
   --port 8687 --preserve-paths --mount-rw "project=$PWD"
+
+# Quicksand: QUICKSAND_APP points to its checkout.
+QUICKSAND_APP=/absolute/path/to/remote-sandbox-quicksand
+uv run --project "$QUICKSAND_APP" remote-sandbox-quicksand \
+  --port 8688 --preserve-paths --mount-rw "project=$PWD"
 ```
 
 From that same project directory in your Claude terminal:
@@ -54,7 +63,7 @@ REMOTE_SANDBOX_API_URL=http://127.0.0.1:8686 \
 claude
 ```
 
-Use port 8687 for the container backend. The temporary directory must be inside the writable mount: Claude creates a user-specific subdirectory there and includes cwd bookkeeping in the command passed to the prefix. Preserving the project and temporary-directory absolute paths lets those commands refer to the same files from the host and guest. Add `.remote-sandbox-claude-tmp/` to your project's ignore file if desired. Setting only `REMOTE_SANDBOX_CWD` does not translate absolute paths embedded in a command.
+Use port 8687 for the container backend or 8688 for Quicksand. The temporary directory must be inside the writable mount: Claude creates a user-specific subdirectory there and includes cwd bookkeeping in the command passed to the prefix. Preserving the project and temporary-directory absolute paths lets those commands refer to the same files from the host and guest. Add `.remote-sandbox-claude-tmp/` to your project's ignore file if desired. Setting only `REMOTE_SANDBOX_CWD` does not translate absolute paths embedded in a command.
 
 The prefix receives exactly one complete command argument; the streaming client also accepts `--no-stdin` before that argument for manual use. Quoting, multiline commands, shell expansion, and Claude's setup/bookkeeping remain part of that unchanged command and are interpreted by the guest shell. According to [Claude's environment-variable documentation](https://code.claude.com/docs/en/env-vars), the prefix also applies to other shell invocations such as shell hooks, status-line commands, and stdio MCP startup commands. Claude and its model connection stay on the host; native file tools such as Read/Edit still access host files. This integration does not change their permissions.
 

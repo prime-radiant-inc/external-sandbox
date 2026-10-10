@@ -1,6 +1,6 @@
 # Remote Sandbox
 
-Remote Sandbox provides a common interface for running commands and working with files inside isolated Linux environments. Clients use the same HTTP and WebSocket protocol with either a v86 virtual machine or an Apple Container backend. A shared browser UI provides a terminal and a managed-network policy editor.
+Remote Sandbox provides a common interface for running commands and working with files inside isolated Linux environments. Clients use the same HTTP and WebSocket protocol with a v86 virtual machine, Apple Container, or Quicksand QEMU virtual machine backend. A shared browser UI provides a terminal and a managed-network policy editor.
 
 This repository is the project home: it contains the implementation-independent [protocol specification](SPEC.md), a Python/pytest conformance runner, the shared [Claude Code shell prefix and streaming client](claude-code/README.md), [Codex setup instructions](codex/README.md), and the [Pi extension](pi/README.md). The implementations and UI have their own repositories and release independently.
 
@@ -10,10 +10,11 @@ This repository is the project home: it contains the implementation-independent 
 | [`remote-sandbox-ui`](https://github.com/prime-radiant-inc/remote-sandbox-ui) | Shared HTML, CSS, JavaScript, frontend tests, and pinned-bundle updater | `~/dev/prime-radiant-inc/remote-sandbox-ui` |
 | [`remote-sandbox-v86`](https://github.com/prime-radiant-inc/remote-sandbox-v86) | TypeScript/Node.js implementation using v86 to run a Linux guest | `~/dev/prime-radiant-inc/remote-sandbox-v86` |
 | [`remote-sandbox-container`](https://github.com/prime-radiant-inc/remote-sandbox-container) | Python implementation using Apple Container to run a Linux guest | `~/dev/prime-radiant-inc/remote-sandbox-container` |
+| [`remote-sandbox-quicksand`](https://github.com/prime-radiant-inc/remote-sandbox-quicksand) | Python implementation using a Quicksand QEMU virtual machine to run a Linux guest | `~/dev/prime-radiant-inc/remote-sandbox-quicksand` |
 
 The core protocol covers discovery, buffered and streaming command execution, and a Codex-compatible process/filesystem endpoint. Optional browser, mount, and managed-proxy profiles add explicit requirements. Each implementation owns its execution backend, lifecycle, file mounts, and authorization. The UI owns presentation; each server bundles a pinned UI release, injects its own branding and tokens, and serves the files from the same origin. Installed servers do not need a sibling UI checkout or Git submodules.
 
-Choose an implementation and follow its README to start a server. Ports remain implementation-specific: the current v86 examples use 8686 and container examples use 8687. The conformance runner below targets either implementation using only its public interfaces. See [coverage and limitations](COVERAGE.md) and [historical implementation results](verification/README.md); those results describe the exact commits tested and are not a claim that every later revision has passed every profile.
+Choose an implementation and follow its README to start a server. Ports remain implementation-specific: the current v86 examples use 8686, container examples use 8687, and Quicksand examples use 8688. The conformance runner below targets any implementation using only its public interfaces. See [coverage and limitations](COVERAGE.md) and [historical implementation results](verification/README.md); those results describe the exact commits tested and are not a claim that every later revision has passed every profile.
 
 The project rename changes repository, package, module, command, and documentation names. It does not change the protocol endpoints, message fields, browser WebSocket subprotocols, or proxy authentication headers in [SPEC.md](SPEC.md).
 

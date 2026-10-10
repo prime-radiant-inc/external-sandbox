@@ -1,6 +1,6 @@
 # Sample implementation verification
 
-These are observations about two implementations, not part of the implementation-neutral [protocol definition](../SPEC.md). They were recorded on October 9, 2026, on macOS arm64, using dedicated loopback instances, temporary mounts, a deny-all initial proxy policy, and the generated localhost TLS fixture. Both services ran real Linux guests; no fake execution backend or coding-model call was used.
+These are observations about specific implementation commits, not part of the implementation-neutral [protocol definition](../SPEC.md). They were recorded on October 9, 2026, on macOS arm64, using dedicated loopback instances, temporary mounts, a deny-all initial proxy policy, and the generated localhost TLS fixture. Every service ran a real Linux guest; no fake execution backend or coding-model call was used.
 
 These historical reports retain their original project names and command paths. The projects are now named `remote-sandbox-container` and `remote-sandbox-v86`, and this runner is `remote-sandbox`. The reproduction commands below use the current command name; the archived JSON and recorded commits are unchanged.
 
@@ -10,6 +10,17 @@ These historical reports retain their original project names and command paths. 
 | `v86-shell-server` (Node.js / v86) | `93e2d9a` | **115 passed, 1 failed**, exit 1 | [node.json](node.json) |
 
 Profiles: core, browser, mounts, proxy, proxy-tls. The runner was built at commit `11710b2` and installed into an isolated environment from its wheel, with the working directory outside the source package. Both reports have complete selections and zero deselected cases. `conforms` is true only for the first target. The checker itself also passed 22 self-tests, including subprocess tests of its exit status and JSON reporting, and passed Ruff. The wheel SHA-256 was `15159055e59c484b1d3009e66082cc3dd8593934cd0d1e0f14a58e1f2cd7efab`.
+
+## Quicksand
+
+`remote-sandbox-quicksand` was checked with the runner from a source checkout at `98fa5d7`, once with each of its guest images:
+
+| Target | Code tested | Full profile result | Report |
+| --- | --- | --- | --- |
+| `remote-sandbox-quicksand` (Python / Quicksand QEMU), prepared Alpine 3.23 image | `a93aa17` | **116 passed**, exit 0 | [quicksand-alpine.json](quicksand-alpine.json) |
+| `remote-sandbox-quicksand` (Python / Quicksand QEMU), Ubuntu 24.04 image | `a93aa17` | **116 passed**, exit 0 | [quicksand-ubuntu.json](quicksand-ubuntu.json) |
+
+Profiles: core, browser, mounts, proxy, proxy-tls. Both reports have complete selections, zero deselected cases, and `conforms` true. The guests ran under HVF on Apple silicon.
 
 ## Observed difference: browser Fetch Metadata without Origin
 

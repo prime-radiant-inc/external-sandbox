@@ -1,6 +1,6 @@
 # Codex with Remote Sandbox
 
-Run Codex on the host and route its process and filesystem operations to either Remote Sandbox backend through `/codex`. Commands run inside the Linux guest, and native `apply_patch` uses the guest filesystem and the backend's mount permissions. No Codex installation inside the guest or Claude shell-prefix client is needed.
+Run Codex on the host and route its process and filesystem operations to any Remote Sandbox backend through `/codex`. Commands run inside the Linux guest, and native `apply_patch` uses the guest filesystem and the backend's mount permissions. No Codex installation inside the guest or Claude shell-prefix client is needed.
 
 This guide preserves the configuration tested with **Codex CLI 0.154.0**. Its exec-server protocol and environment selection are experimental; newer CLI versions need a compatibility check. The [official CLI reference](https://developers.openai.com/codex/cli/reference/) describes current general commands, but does not establish compatibility with this version-specific executor configuration.
 
@@ -18,16 +18,22 @@ remote-sandbox-v86 --port 8686 --preserve-paths \
 uv run remote-sandbox-container --port 8687 --preserve-paths \
   --mount-rw project=/absolute/path/to/project \
   --mount-ro reference=/absolute/path/to/reference
+
+# Quicksand, from its checkout
+uv run remote-sandbox-quicksand --port 8688 --preserve-paths \
+  --mount-rw project=/absolute/path/to/project \
+  --mount-ro reference=/absolute/path/to/reference
 ```
 
-For v86 from source, run `npm run build` in `remote-sandbox-v86/outputs/remote-sandbox-v86`, then substitute `node dist/cli.js` for the installed command. For the container backend from elsewhere, use `uv run --project /absolute/path/to/remote-sandbox-container remote-sandbox-container`. Replace the example paths with existing absolute host directories; omit the reference mount if unused.
+For v86 from source, run `npm run build` in `remote-sandbox-v86/outputs/remote-sandbox-v86`, then substitute `node dist/cli.js` for the installed command. For the container or Quicksand backend from elsewhere, use `uv run --project /absolute/path/to/remote-sandbox-container remote-sandbox-container` or the matching `remote-sandbox-quicksand` checkout and command. Replace the example paths with existing absolute host directories; omit the reference mount if unused.
 
-`--preserve-paths` exposes each mounted host path at the same absolute path inside the guest, so Codex's working directory resolves there. Mounts and network policy remain backend responsibilities: see [v86](https://github.com/prime-radiant-inc/remote-sandbox-v86) and [container](https://github.com/prime-radiant-inc/remote-sandbox-container) for their guarantees and options. Guest networking is disabled by default; use the selected backend's `--proxy-config` option when commands need approved network access.
+`--preserve-paths` exposes each mounted host path at the same absolute path inside the guest, so Codex's working directory resolves there. Mounts and network policy remain backend responsibilities: see [v86](https://github.com/prime-radiant-inc/remote-sandbox-v86), [container](https://github.com/prime-radiant-inc/remote-sandbox-container) and [Quicksand](https://github.com/prime-radiant-inc/remote-sandbox-quicksand) for their guarantees and options. Guest networking is disabled by default; use the selected backend's `--proxy-config` option when commands need approved network access.
 
 | Backend | Executor URL |
 | --- | --- |
 | v86 | `ws://127.0.0.1:8686/codex` |
 | Apple Container | `ws://127.0.0.1:8687/codex` |
+| Quicksand | `ws://127.0.0.1:8688/codex` |
 
 ## Configure a dedicated Codex home
 
@@ -50,7 +56,7 @@ connect_timeout_sec = 5
 initialize_timeout_sec = 10
 ```
 
-For Apple Container, change the URL port to `8687`. For any other port, update both the server command and this URL. Use separate dedicated homes if you want to keep configurations for both backends. The file format is TOML, with top-level settings before `[[environments]]`.
+For Apple Container, change the URL port to `8687`; for Quicksand, `8688`. For any other port, update both the server command and this URL. Use separate dedicated homes if you want to keep configurations for several backends. The file format is TOML, with top-level settings before `[[environments]]`.
 
 `include_local = false` and the single environment entry make only this remote executor available. In the tested CLI, `default` alone does not exclude other registered executors. There is no `--environment` selector; `--profile` and `-c` configure `config.toml`, not this separate file. `CODEX_EXEC_SERVER_URL` is ignored when `environments.toml` exists.
 
@@ -91,6 +97,6 @@ In CLI 0.154.0, the TUI's `!command` shortcut requires a local environment and f
 
 ## Verification and protocol
 
-The [protocol specification](../SPEC.md) defines the common `/codex` process and filesystem contract, limits and unsupported capabilities. The [conformance runner](../README.md#run-against-a-server) checks that contract against either running backend without a model call. These checks do not by themselves prove compatibility with every Codex CLI release.
+The [protocol specification](../SPEC.md) defines the common `/codex` process and filesystem contract, limits and unsupported capabilities. The [conformance runner](../README.md#run-against-a-server) checks that contract against any running backend without a model call. These checks do not by themselves prove compatibility with every Codex CLI release.
 
-Backend compatibility tests also exercise a real Codex CLI with deterministic local model responses, including native `apply_patch` on writable and read-only mounts. See the [v86 protocol and test notes](https://github.com/prime-radiant-inc/remote-sandbox-v86/blob/main/outputs/remote-sandbox-v86/docs/codex-protocol.md) and the [container demo verification](https://github.com/prime-radiant-inc/remote-sandbox-container/blob/main/docs/demo.md#verification) for their test commands and prerequisites. Recheck those tests before changing the CLI version used with this guide.
+Backend compatibility tests also exercise a real Codex CLI with deterministic local model responses, including native `apply_patch` on writable and read-only mounts. See the [v86 protocol and test notes](https://github.com/prime-radiant-inc/remote-sandbox-v86/blob/main/outputs/remote-sandbox-v86/docs/codex-protocol.md), the [container demo verification](https://github.com/prime-radiant-inc/remote-sandbox-container/blob/main/docs/demo.md#verification) and the [Quicksand verification](https://github.com/prime-radiant-inc/remote-sandbox-quicksand/blob/main/docs/verification.md) for their test commands and prerequisites. Recheck those tests before changing the CLI version used with this guide.
