@@ -16,10 +16,32 @@ def matches_glob(name, pattern):
     negative = pattern.startswith("!")
     if negative: pattern = pattern[1:]
     if pattern.startswith("/"): pattern = pattern[1:]
-    candidate = pathlib.PurePosixPath(name)
-    matched = (fnmatch.fnmatchcase(candidate.name, pattern) if "/" not in pattern
-               else candidate.full_match(pattern))
+    matched = (fnmatch.fnmatchcase(pathlib.PurePosixPath(name).name, pattern) if "/" not in pattern
+               else full_match(name, pattern))
     return not matched if negative else matched
+
+def full_match(name, pattern):
+    # Match a relative path against a glob with PurePosixPath.full_match semantics:
+    # "**" spans whole segments (at least one when it ends a longer pattern), other
+    # wildcards stay within a segment, and dotfiles are not special.
+    names = pathlib.PurePosixPath(name).parts
+    parts = []
+    for part in pathlib.PurePosixPath(pattern).parts:
+        if not (part == "**" and parts and parts[-1] == "**"):
+            parts.append(part)
+    memo = {}
+    def match(i, j):
+        if (i, j) not in memo:
+            if j == len(parts):
+                memo[i, j] = i == len(names)
+            elif parts[j] == "**":
+                minimum = 1 if j == len(parts) - 1 and j > 0 else 0
+                memo[i, j] = any(match(k, j + 1) for k in range(i + minimum, len(names) + 1))
+            else:
+                memo[i, j] = (i < len(names) and fnmatch.fnmatchcase(names[i], parts[j])
+                              and match(i + 1, j + 1))
+        return memo[i, j]
+    return match(0, 0)
 
 def run(request):
     operation = request["operation"]
@@ -139,12 +161,13 @@ def run(request):
                 "linesTruncated": lines_truncated}
     raise ValueError("Unknown guest operation: " + operation)
 
-try:
-    result = run(json.load(sys.stdin))
-    print(json.dumps({"ok": True, "value": result}, ensure_ascii=True))
-except Exception as error:
-    print(json.dumps({"ok": False, "error": str(error),
-                      "code": errno.errorcode.get(getattr(error, "errno", None))}, ensure_ascii=True))
+if __name__ == "__main__":
+    try:
+        result = run(json.load(sys.stdin))
+        print(json.dumps({"ok": True, "value": result}, ensure_ascii=True))
+    except Exception as error:
+        print(json.dumps({"ok": False, "error": str(error),
+                          "code": errno.errorcode.get(getattr(error, "errno", None))}, ensure_ascii=True))
 `;
 
 const HELPER_COMMAND = `python3 -c '${GUEST_HELPER.replaceAll("'", "'\\''")}'`;
