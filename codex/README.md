@@ -2,7 +2,7 @@
 
 Run Codex on the host and route its process and filesystem operations to any Remote Sandbox backend through `/codex`. Commands run inside the Linux guest, and native `apply_patch` uses the guest filesystem and the backend's mount permissions. No Codex installation inside the guest or Claude shell-prefix client is needed.
 
-This guide preserves the configuration tested with **Codex CLI 0.154.0**. Its exec-server protocol and environment selection are experimental; newer CLI versions need a compatibility check. The [official CLI reference](https://developers.openai.com/codex/cli/reference/) describes current general commands, but does not establish compatibility with this version-specific executor configuration.
+This guide preserves the configuration tested with **Codex CLI 0.164.0**. Its exec-server protocol and environment selection are experimental; newer CLI versions need a compatibility check. The [official CLI reference](https://developers.openai.com/codex/cli/reference/) describes current general commands, but does not establish compatibility with this version-specific executor configuration.
 
 ## Start a backend
 
@@ -37,7 +37,7 @@ For v86 from source, run `npm run build` in `remote-sandbox-v86/outputs/remote-s
 
 ## Configure a dedicated Codex home
 
-CLI 0.154.0 reads `$CODEX_HOME/environments.toml`, normally `~/.codex/environments.toml`. Create a separate home for Remote Sandbox so choosing this executor is explicit for each invocation:
+CLI 0.164.0 reads `$CODEX_HOME/environments.toml`, normally `~/.codex/environments.toml`. Create a separate home for Remote Sandbox so choosing this executor is explicit for each invocation:
 
 ```sh
 mkdir -p "$HOME/.codex-remote-sandbox"
@@ -93,7 +93,7 @@ Here `danger-full-access` requests execution without an additional Codex platfor
 
 Codex, its authentication, model requests and host extensions continue running on the host. This integration routes the executor's process and filesystem operations; it does not relocate every host extension. Guest processes do not implicitly inherit host environment variables.
 
-In CLI 0.154.0, the TUI's `!command` shortcut requires a local environment and fails in this remote-only configuration; it can terminate the TUI. Ask Codex to run a command through its execution tool, or use the backend's browser terminal. The `/codex` endpoint speaks exec-server RPC; it is not a Codex app-server endpoint for `codex --remote` or `thread/shellCommand`.
+In CLI 0.164.0, the TUI's `!command` shortcut requires a local environment and fails in this remote-only configuration; it can terminate the TUI. Ask Codex to run a command through its execution tool, or use the backend's browser terminal. The `/codex` endpoint speaks exec-server RPC; it is not a Codex app-server endpoint for `codex --remote` or `thread/shellCommand`.
 
 ## Verification and protocol
 
