@@ -30,7 +30,7 @@ def test_runner_exit_status_and_report(tmp_path, broken):
     thread.start()
     report = tmp_path / "report.json"
     try:
-        result = subprocess.run([sys.executable, "-m", "remote_sandbox.runner", "--url",
+        result = subprocess.run([sys.executable, "-m", "external_sandbox.runner", "--url",
             f"http://127.0.0.1:{server.server_port}", "-k", "test_discovery", "-q", "--report", str(report)],
             capture_output=True, text=True, timeout=30)
     finally:
@@ -45,7 +45,7 @@ def test_runner_exit_status_and_report(tmp_path, broken):
 
 
 def test_missing_profile_prerequisites_are_usage_errors():
-    result = subprocess.run([sys.executable, "-m", "remote_sandbox.runner", "--url", "http://127.0.0.1:1",
+    result = subprocess.run([sys.executable, "-m", "external_sandbox.runner", "--url", "http://127.0.0.1:1",
                              "--profile", "mounts", "--collect-only"], capture_output=True, text=True, timeout=20)
     assert result.returncode == 4
     assert "--rw-dir" in result.stderr

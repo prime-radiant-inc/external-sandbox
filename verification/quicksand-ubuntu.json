@@ -1068,14 +1068,14 @@
     "mounts": [
       {
         "name": "spec-rw",
-        "hostPath": "/Users/simon/Dropbox/dev/prime-radiant-inc/remote-sandbox-quicksand/work/spec-rw",
+        "hostPath": "/Users/simon/Dropbox/dev/prime-radiant-inc/external-sandbox-quicksand/work/spec-rw",
         "mode": "rw",
         "preservedPaths": [],
         "guestPath": "/mnt/spec-rw"
       },
       {
         "name": "spec-ro",
-        "hostPath": "/Users/simon/Dropbox/dev/prime-radiant-inc/remote-sandbox-quicksand/work/spec-ro",
+        "hostPath": "/Users/simon/Dropbox/dev/prime-radiant-inc/external-sandbox-quicksand/work/spec-ro",
         "mode": "ro",
         "preservedPaths": [],
         "guestPath": "/mnt/spec-ro"

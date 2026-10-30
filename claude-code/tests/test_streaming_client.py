@@ -14,7 +14,7 @@ from websockets.asyncio.server import serve
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CLIENT = ROOT / "remote_sandbox_exec.py"
+CLIENT = ROOT / "external_sandbox_exec.py"
 WRAPPER = ROOT / "claude-shell-prefix.sh"
 EXIT = {"type": "exit", "exitCode": 0, "signal": None, "timedOut": False,
         "outputLimitExceeded": False, "durationMs": 12}
@@ -34,7 +34,7 @@ async def receive(ws):
 
 class ClientTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
-        self.directory = tempfile.TemporaryDirectory(prefix="remote-sandbox-client-test-")
+        self.directory = tempfile.TemporaryDirectory(prefix="external-sandbox-client-test-")
         self.root = Path(self.directory.name).resolve()
         self.cwd = self.root / "nested" / "child"
         self.cwd.mkdir(parents=True)
@@ -90,8 +90,8 @@ class ClientTests(unittest.IsolatedAsyncioTestCase):
         await send(ws, EXIT)
 
     async def spawn(self, command="true", env=None, args=None, stdin=asyncio.subprocess.PIPE, wrapper=False):
-        variables = {key: value for key, value in os.environ.items() if not key.startswith(("V86_", "REMOTE_SANDBOX_"))}
-        variables.update(REMOTE_SANDBOX_API_URL=f"http://127.0.0.1:{self.port}")
+        variables = {key: value for key, value in os.environ.items() if not key.startswith(("V86_", "EXTERNAL_SANDBOX_"))}
+        variables.update(EXTERNAL_SANDBOX_API_URL=f"http://127.0.0.1:{self.port}")
         variables.update(env or {})
         variables = {key: value for key, value in variables.items() if value is not None}
         executable = [str(WRAPPER)] if wrapper else ["uv", "run", "--script", str(CLIENT)]
@@ -149,27 +149,27 @@ class ClientTests(unittest.IsolatedAsyncioTestCase):
         self.mounts[0]["preservedPaths"] = [str(self.root)]
         self.assertEqual((await self.result(await self.spawn()))[0], 0)
         self.assertEqual(self.starts[-1]["cwd"], str(self.cwd))
-        child = await self.spawn(env={"REMOTE_SANDBOX_CWD": "/root", "REMOTE_SANDBOX_TIMEOUT_MS": "4567",
-                                     "REMOTE_SANDBOX_MAX_OUTPUT_BYTES": "1024", "REMOTE_SANDBOX_FORWARD_STDIN": "0"})
+        child = await self.spawn(env={"EXTERNAL_SANDBOX_CWD": "/root", "EXTERNAL_SANDBOX_TIMEOUT_MS": "4567",
+                                     "EXTERNAL_SANDBOX_MAX_OUTPUT_BYTES": "1024", "EXTERNAL_SANDBOX_FORWARD_STDIN": "0"})
         self.assertEqual((await self.result(child))[0], 0)
         self.assertEqual(self.starts[-1], {"type": "start", "command": "true", "cwd": "/root",
                                           "timeoutMs": 4567, "maxOutputBytes": 1024, "stdin": False})
 
     async def test_legacy_settings_remain_fallbacks_and_current_names_win(self):
-        legacy = {"REMOTE_SANDBOX_API_URL": None, "V86_API_URL": f"http://127.0.0.1:{self.port}",
+        legacy = {"EXTERNAL_SANDBOX_API_URL": None, "V86_API_URL": f"http://127.0.0.1:{self.port}",
                   "V86_CWD": "/legacy", "V86_TIMEOUT_MS": "2345", "V86_MAX_OUTPUT_BYTES": "512", "V86_FORWARD_STDIN": "0"}
         self.assertEqual((await self.result(await self.spawn(env=legacy)))[0], 0)
         self.assertEqual(self.starts[-1], {"type": "start", "command": "true", "cwd": "/legacy", "timeoutMs": 2345,
                                           "maxOutputBytes": 512, "stdin": False})
-        current = {**legacy, "REMOTE_SANDBOX_API_URL": f"http://127.0.0.1:{self.port}", "V86_API_URL": "http://invalid.example",
-                   "REMOTE_SANDBOX_CWD": "/current", "REMOTE_SANDBOX_TIMEOUT_MS": "4567",
-                   "REMOTE_SANDBOX_MAX_OUTPUT_BYTES": "1024", "REMOTE_SANDBOX_FORWARD_STDIN": "1"}
+        current = {**legacy, "EXTERNAL_SANDBOX_API_URL": f"http://127.0.0.1:{self.port}", "V86_API_URL": "http://invalid.example",
+                   "EXTERNAL_SANDBOX_CWD": "/current", "EXTERNAL_SANDBOX_TIMEOUT_MS": "4567",
+                   "EXTERNAL_SANDBOX_MAX_OUTPUT_BYTES": "1024", "EXTERNAL_SANDBOX_FORWARD_STDIN": "1"}
         self.assertEqual((await self.result(await self.spawn(env=current)))[0], 0)
         self.assertEqual(self.starts[-1], {"type": "start", "command": "true", "cwd": "/current", "timeoutMs": 4567,
                                           "maxOutputBytes": 1024, "stdin": True})
 
     async def test_no_stdin_option_and_ws_origin(self):
-        child = await self.spawn(args=["--no-stdin", "cat"], env={"REMOTE_SANDBOX_API_URL": f"ws://127.0.0.1:{self.port}"})
+        child = await self.spawn(args=["--no-stdin", "cat"], env={"EXTERNAL_SANDBOX_API_URL": f"ws://127.0.0.1:{self.port}"})
         self.assertEqual((await self.result(child))[0], 0)
         self.assertFalse(self.starts[-1]["stdin"])
 
@@ -256,7 +256,7 @@ class ClientTests(unittest.IsolatedAsyncioTestCase):
                 self.handler = handler
                 code, _, stderr = await self.result(await self.spawn())
                 self.assertEqual(code, 125)
-                self.assertIn(b"remote-sandbox-shell-prefix:", stderr)
+                self.assertIn(b"external-sandbox-shell-prefix:", stderr)
 
     async def test_sigterm_cancels_and_exits_promptly_while_stdin_remains_open(self):
         started = asyncio.Event()
@@ -317,10 +317,10 @@ class ClientTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.starts, [])
 
     async def test_invalid_urls_settings_and_unmapped_cwd_fail_before_execution(self):
-        for env in [{"REMOTE_SANDBOX_API_URL": "https://localhost:8686"}, {"REMOTE_SANDBOX_API_URL": "ws://example.com"},
-                    {"REMOTE_SANDBOX_API_URL": "http://localhost/path"}, {"REMOTE_SANDBOX_API_URL": "http://user:pass@localhost"},
-                    {"REMOTE_SANDBOX_API_URL": "http://localhost:0"},
-                    {"REMOTE_SANDBOX_TIMEOUT_MS": "300001"}, {"REMOTE_SANDBOX_MAX_OUTPUT_BYTES": "0"}, {"REMOTE_SANDBOX_CWD": "relative"}]:
+        for env in [{"EXTERNAL_SANDBOX_API_URL": "https://localhost:8686"}, {"EXTERNAL_SANDBOX_API_URL": "ws://example.com"},
+                    {"EXTERNAL_SANDBOX_API_URL": "http://localhost/path"}, {"EXTERNAL_SANDBOX_API_URL": "http://user:pass@localhost"},
+                    {"EXTERNAL_SANDBOX_API_URL": "http://localhost:0"},
+                    {"EXTERNAL_SANDBOX_TIMEOUT_MS": "300001"}, {"EXTERNAL_SANDBOX_MAX_OUTPUT_BYTES": "0"}, {"EXTERNAL_SANDBOX_CWD": "relative"}]:
             with self.subTest(env=env):
                 self.assertEqual((await self.result(await self.spawn(env=env)))[0], 125)
         self.mounts.clear()
@@ -331,7 +331,7 @@ class ClientTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_http_and_websocket_redirects_are_not_followed(self):
         self.redirect = True
-        for env in [{}, {"REMOTE_SANDBOX_CWD": "/"}]:
+        for env in [{}, {"EXTERNAL_SANDBOX_CWD": "/"}]:
             with self.subTest(env=env):
                 self.assertEqual((await self.result(await self.spawn(env=env)))[0], 125)
         self.assertNotIn("/redirect-target", self.http_paths)

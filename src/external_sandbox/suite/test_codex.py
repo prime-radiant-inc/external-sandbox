@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 
-from remote_sandbox.client import assert_fields, RPC, RPCError, b64, unb64, uri
+from external_sandbox.client import assert_fields, RPC, RPCError, b64, unb64, uri
 
 
 @pytest.mark.contract("C1")

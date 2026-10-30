@@ -14,7 +14,7 @@ from .client import Client, RPC, validate_url
 
 
 def pytest_addoption(parser):
-    group = parser.getgroup("remote-sandbox-conformance")
+    group = parser.getgroup("external-sandbox-conformance")
     group.addoption("--url", help="Loopback HTTP origin of a dedicated running server")
     group.addoption("--profile", action="append", default=[], choices=["browser", "mounts", "proxy", "proxy-tls"],
                     help="Additional profile to require (repeatable); core always runs")
@@ -118,7 +118,7 @@ async def rpc(client):
 
 @pytest_asyncio.fixture
 async def space(client):
-    path = "/tmp/remote-sandbox-" + uuid.uuid4().hex
+    path = "/tmp/external-sandbox-" + uuid.uuid4().hex
     await client.success("mkdir -m 700 -- " + shlex.quote(path))
     try:
         yield path

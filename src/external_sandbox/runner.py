@@ -7,7 +7,7 @@ import pytest
 
 def main():
     suite = Path(__file__).with_name("suite")
-    return pytest.main([str(suite), "-p", "remote_sandbox.plugin", "-o", "asyncio_mode=auto",
+    return pytest.main([str(suite), "-p", "external_sandbox.plugin", "-o", "asyncio_mode=auto",
                         "-o", "timeout=90", *sys.argv[1:]])
 
 

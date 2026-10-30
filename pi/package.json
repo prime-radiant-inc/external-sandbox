@@ -1,7 +1,7 @@
 {
-  "name": "remote-sandbox-pi",
+  "name": "external-sandbox-pi",
   "version": "0.1.0",
-  "description": "Run Pi coding tools and user shell commands through the Remote Sandbox protocol",
+  "description": "Run Pi coding tools and user shell commands through the External Sandbox protocol",
   "type": "module",
   "license": "MIT",
   "engines": { "node": ">=22.19.0" },

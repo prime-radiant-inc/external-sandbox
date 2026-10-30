@@ -11,8 +11,8 @@ import { SandboxClient } from "../transport.mjs";
 
 // These tests need an already-running sandbox. They neither start containers nor
 // call a model provider, and never modify the server's proxy configuration.
-const serverUrl = process.env.REMOTE_SANDBOX_PI_TEST_URL ?? process.env.SANDBOX_PI_TEST_URL;
-const skip = !serverUrl && "Set REMOTE_SANDBOX_PI_TEST_URL to an existing sandbox server";
+const serverUrl = process.env.EXTERNAL_SANDBOX_PI_TEST_URL ?? process.env.SANDBOX_PI_TEST_URL;
+const skip = !serverUrl && "Set EXTERNAL_SANDBOX_PI_TEST_URL to an existing sandbox server";
 const extensionDirectory = dirname(dirname(fileURLToPath(import.meta.url)));
 const piDirectory = dirname(fileURLToPath(import.meta.resolve("@earendil-works/pi-coding-agent")));
 const text = (result) => result.content.filter((part) => part.type === "text").map((part) => part.text).join("\n");

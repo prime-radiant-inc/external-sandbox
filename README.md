@@ -1,16 +1,16 @@
-# Remote Sandbox
+# External Sandbox
 
-Remote Sandbox provides a common interface for running commands and working with files inside isolated Linux environments. Clients use the same HTTP and WebSocket protocol with a v86 virtual machine, Apple Container, or Quicksand QEMU virtual machine backend. A shared browser UI provides a terminal and a managed-network policy editor.
+External Sandbox provides a common interface for running commands and working with files inside isolated Linux environments. Clients use the same HTTP and WebSocket protocol with a v86 virtual machine, Apple Container, or Quicksand QEMU virtual machine backend. A shared browser UI provides a terminal and a managed-network policy editor.
 
 This repository is the project home: it contains the implementation-independent [protocol specification](SPEC.md), a Python/pytest conformance runner, the shared [Claude Code shell prefix and streaming client](claude-code/README.md), [Codex setup instructions](codex/README.md), and the [Pi extension](pi/README.md). The implementations and UI have their own repositories and release independently.
 
 | Project | Responsibility | Local directory |
 | --- | --- | --- |
-| `remote-sandbox` | Protocol specification, conformance runner, agent integrations, and overall documentation | `~/dev/prime-radiant-inc/remote-sandbox` |
-| [`remote-sandbox-ui`](https://github.com/prime-radiant-inc/remote-sandbox-ui) | Shared HTML, CSS, JavaScript, frontend tests, and pinned-bundle updater | `~/dev/prime-radiant-inc/remote-sandbox-ui` |
-| [`remote-sandbox-v86`](https://github.com/prime-radiant-inc/remote-sandbox-v86) | TypeScript/Node.js implementation using v86 to run a Linux guest | `~/dev/prime-radiant-inc/remote-sandbox-v86` |
-| [`remote-sandbox-container`](https://github.com/prime-radiant-inc/remote-sandbox-container) | Python implementation using Apple Container to run a Linux guest | `~/dev/prime-radiant-inc/remote-sandbox-container` |
-| [`remote-sandbox-quicksand`](https://github.com/prime-radiant-inc/remote-sandbox-quicksand) | Python implementation using a Quicksand QEMU virtual machine to run a Linux guest | `~/dev/prime-radiant-inc/remote-sandbox-quicksand` |
+| `external-sandbox` | Protocol specification, conformance runner, agent integrations, and overall documentation | `~/dev/prime-radiant-inc/external-sandbox` |
+| [`external-sandbox-ui`](https://github.com/prime-radiant-inc/external-sandbox-ui) | Shared HTML, CSS, JavaScript, frontend tests, and pinned-bundle updater | `~/dev/prime-radiant-inc/external-sandbox-ui` |
+| [`external-sandbox-v86`](https://github.com/prime-radiant-inc/external-sandbox-v86) | TypeScript/Node.js implementation using v86 to run a Linux guest | `~/dev/prime-radiant-inc/external-sandbox-v86` |
+| [`external-sandbox-container`](https://github.com/prime-radiant-inc/external-sandbox-container) | Python implementation using Apple Container to run a Linux guest | `~/dev/prime-radiant-inc/external-sandbox-container` |
+| [`external-sandbox-quicksand`](https://github.com/prime-radiant-inc/external-sandbox-quicksand) | Python implementation using a Quicksand QEMU virtual machine to run a Linux guest | `~/dev/prime-radiant-inc/external-sandbox-quicksand` |
 
 The core protocol covers discovery, buffered and streaming command execution, and a Codex-compatible process/filesystem endpoint. Optional browser, mount, and managed-proxy profiles add explicit requirements. Each implementation owns its execution backend, lifecycle, file mounts, and authorization. The UI owns presentation; each server bundles a pinned UI release, injects its own branding and tokens, and serves the files from the same origin. Installed servers do not need a sibling UI checkout or Git submodules.
 
@@ -24,7 +24,7 @@ Requirements: Python 3.12+, `uv`, and a dedicated running server whose guest has
 
 ```sh
 uv sync --locked
-uv run remote-sandbox-conformance --url http://127.0.0.1:8687 -q
+uv run external-sandbox-conformance --url http://127.0.0.1:8687 -q
 ```
 
 Default **core** checks discovery, HTTP execution, streaming execution, Codex process/filesystem RPC, and access rejection. Optional profiles are explicit requirements; a missing dependency or endpoint fails rather than silently skips:
@@ -37,7 +37,7 @@ Default **core** checks discovery, HTTP execution, streaming execution, Codex pr
 | `--profile proxy` | Proxy-enabled target; runner and server must share a host so the proxy can reach a synthetic loopback upstream. Temporarily replaces policy and restores it afterward. |
 
 ```sh
-uv run remote-sandbox-conformance --url http://127.0.0.1:18787 \
+uv run external-sandbox-conformance --url http://127.0.0.1:18787 \
   --profile browser --profile mounts --profile proxy \
   --rw-dir /mnt/spec-rw --ro-dir /mnt/spec-ro \
   --report work/python.json --junitxml work/python.xml -q
@@ -49,22 +49,22 @@ uv run remote-sandbox-conformance --url http://127.0.0.1:18787 \
 
 Start a dedicated implementation on an unused loopback port and wait for `/health` to report readiness. For the mounts profile, expose two temporary host directories as `/mnt/spec-rw` (writable) and `/mnt/spec-ro` (read-only). For the proxy profile, start with a deny-all policy (`{"allow": []}`); the tests supply local allow rules as needed and restore the original policy. These launch settings are implementation-specific and are not part of the wire protocol.
 
-Shut down the dedicated server after testing. If it becomes unavailable during cleanup, guest scratch files may remain; all runner-created scratch files/directories use the `remote-sandbox-` prefix.
+Shut down the dedicated server after testing. If it becomes unavailable during cleanup, guest scratch files may remain; all runner-created scratch files/directories use the `external-sandbox-` prefix.
 
 ## Optional HTTPS proxy fixture
 
 The HTTPS profile uses a synthetic host secret and a temporary localhost upstream certificate. Generate them with:
 
 ```sh
-uv run remote-sandbox-proxy-fixture work/tls
+uv run external-sandbox-proxy-fixture work/tls
 ```
 
-Before starting the dedicated target, source `work/tls/server-env.sh` in its launch shell. This sets `REMOTE_SANDBOX_SPEC_SECRET` to a synthetic test value and supplies `SSL_CERT_FILE` / `NODE_EXTRA_CA_CERTS` for runtimes that support those trust settings. Other implementations must be configured to trust `work/tls/cert.pem` for upstream TLS and expose the same synthetic secret to their policy engine. This trust is scoped to the target process; do not install the certificate in the host trust store. The certificate expires after seven days; use a fresh directory to regenerate it.
+Before starting the dedicated target, source `work/tls/server-env.sh` in its launch shell. This sets `EXTERNAL_SANDBOX_SPEC_SECRET` to a synthetic test value and supplies `SSL_CERT_FILE` / `NODE_EXTRA_CA_CERTS` for runtimes that support those trust settings. Other implementations must be configured to trust `work/tls/cert.pem` for upstream TLS and expose the same synthetic secret to their policy engine. This trust is scoped to the target process; do not install the certificate in the host trust store. The certificate expires after seven days; use a fresh directory to regenerate it.
 
 Then include the profile when invoking the runner:
 
 ```sh
-uv run remote-sandbox-conformance --url http://127.0.0.1:18787 \
+uv run external-sandbox-conformance --url http://127.0.0.1:18787 \
   --profile browser --profile mounts --profile proxy-tls \
   --rw-dir /mnt/spec-rw --ro-dir /mnt/spec-ro \
   --proxy-tls-cert work/tls/cert.pem --proxy-tls-key work/tls/key.pem \
@@ -84,8 +84,8 @@ uv build
 The executable and full pytest suite ship in the wheel, so it also works outside the source checkout:
 
 ```sh
-uvx --from /absolute/path/to/remote_sandbox-0.1.0-py3-none-any.whl \
-  remote-sandbox-conformance --url http://127.0.0.1:8687 -q
+uvx --from /absolute/path/to/external_sandbox-0.1.0-py3-none-any.whl \
+  external-sandbox-conformance --url http://127.0.0.1:8687 -q
 ```
 
-Direct pytest invocation is also supported: `uv run pytest -p remote_sandbox.plugin src/remote_sandbox/suite --url http://127.0.0.1:8687`. Server launch flags, guest transport, sandbox internals, browser layout and backend-specific security guarantees are outside this wire contract.
+Direct pytest invocation is also supported: `uv run pytest -p external_sandbox.plugin src/external_sandbox/suite --url http://127.0.0.1:8687`. Server launch flags, guest transport, sandbox internals, browser layout and backend-specific security guarantees are outside this wire contract.

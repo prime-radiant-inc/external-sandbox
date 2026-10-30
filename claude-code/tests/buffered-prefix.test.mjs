@@ -12,7 +12,7 @@ const wrapper = fileURLToPath(new URL('../claude-shell-prefix-http.sh', import.m
 const ok = { stdout: '', stderr: '', exitCode: 0, signal: null, timedOut: false, outputLimitExceeded: false, durationMs: 1 };
 
 async function fixture(t, response = ok) {
-  const root = await realpath(await mkdtemp(path.join(os.tmpdir(), 'remote-sandbox-shell-prefix-')));
+  const root = await realpath(await mkdtemp(path.join(os.tmpdir(), 'external-sandbox-shell-prefix-')));
   const cwd = path.join(root, 'nested', 'child');
   await mkdir(cwd, { recursive: true });
   const calls = [];
@@ -41,9 +41,9 @@ async function fixture(t, response = ok) {
     return await new Promise((resolve, reject) => {
       const child = spawn(wrapper, [command], { cwd, env: {
         ...process.env, V86_API_URL: undefined, V86_CWD: undefined, V86_TIMEOUT_MS: undefined,
-        V86_MAX_OUTPUT_BYTES: undefined, V86_FORWARD_STDIN: undefined, REMOTE_SANDBOX_CWD: undefined, REMOTE_SANDBOX_FORWARD_STDIN: undefined,
-        REMOTE_SANDBOX_TIMEOUT_MS: undefined, REMOTE_SANDBOX_MAX_OUTPUT_BYTES: undefined,
-        REMOTE_SANDBOX_API_URL: `http://127.0.0.1:${port}`, ...env,
+        V86_MAX_OUTPUT_BYTES: undefined, V86_FORWARD_STDIN: undefined, EXTERNAL_SANDBOX_CWD: undefined, EXTERNAL_SANDBOX_FORWARD_STDIN: undefined,
+        EXTERNAL_SANDBOX_TIMEOUT_MS: undefined, EXTERNAL_SANDBOX_MAX_OUTPUT_BYTES: undefined,
+        EXTERNAL_SANDBOX_API_URL: `http://127.0.0.1:${port}`, ...env,
       }, stdio: ['pipe', 'pipe', 'pipe'] });
       let stdout = '', stderr = '';
       child.stdout.setEncoding('utf8').on('data', chunk => { stdout += chunk; });
@@ -78,7 +78,7 @@ test('preserved paths retain the host cwd path inside the VM', async t => {
 test('explicit guest cwd, stdin opt-in, and execution limits pass through', async t => {
   const f = await fixture(t);
   const actual = await f.run('cat', {
-    REMOTE_SANDBOX_CWD: '/root', REMOTE_SANDBOX_FORWARD_STDIN: '1', REMOTE_SANDBOX_TIMEOUT_MS: '4567', REMOTE_SANDBOX_MAX_OUTPUT_BYTES: '1024',
+    EXTERNAL_SANDBOX_CWD: '/root', EXTERNAL_SANDBOX_FORWARD_STDIN: '1', EXTERNAL_SANDBOX_TIMEOUT_MS: '4567', EXTERNAL_SANDBOX_MAX_OUTPUT_BYTES: '1024',
   }, 'quoted " data\nand another line\0');
   assert.equal(actual.exitCode, 0);
   assert.deepEqual(f.calls[0], { command: 'cat', cwd: '/root', timeoutMs: 4567,
@@ -87,13 +87,13 @@ test('explicit guest cwd, stdin opt-in, and execution limits pass through', asyn
 
 test('legacy client settings remain fallbacks and current settings take precedence', async t => {
   const f = await fixture(t);
-  const legacy = { REMOTE_SANDBOX_API_URL: undefined, V86_API_URL: `http://127.0.0.1:${f.port}`,
+  const legacy = { EXTERNAL_SANDBOX_API_URL: undefined, V86_API_URL: `http://127.0.0.1:${f.port}`,
     V86_CWD: '/legacy', V86_TIMEOUT_MS: '2345', V86_MAX_OUTPUT_BYTES: '512', V86_FORWARD_STDIN: '1' };
   assert.equal((await f.run('cat', legacy, 'legacy input')).exitCode, 0);
   assert.deepEqual(f.calls[0], { command: 'cat', cwd: '/legacy', timeoutMs: 2345, maxOutputBytes: 512, stdin: 'legacy input' });
-  const current = { ...legacy, REMOTE_SANDBOX_API_URL: `http://127.0.0.1:${f.port}`, V86_API_URL: 'http://invalid.example',
-    REMOTE_SANDBOX_CWD: '/current', REMOTE_SANDBOX_TIMEOUT_MS: '4567', REMOTE_SANDBOX_MAX_OUTPUT_BYTES: '1024',
-    REMOTE_SANDBOX_FORWARD_STDIN: '0' };
+  const current = { ...legacy, EXTERNAL_SANDBOX_API_URL: `http://127.0.0.1:${f.port}`, V86_API_URL: 'http://invalid.example',
+    EXTERNAL_SANDBOX_CWD: '/current', EXTERNAL_SANDBOX_TIMEOUT_MS: '4567', EXTERNAL_SANDBOX_MAX_OUTPUT_BYTES: '1024',
+    EXTERNAL_SANDBOX_FORWARD_STDIN: '0' };
   assert.equal((await f.run('true', current)).exitCode, 0);
   assert.deepEqual(f.calls[1], { command: 'true', cwd: '/current', timeoutMs: 4567, maxOutputBytes: 1024 });
 });
@@ -105,9 +105,9 @@ test('missing cwd mapping and nonlocal URLs fail without command execution', asy
   assert.equal(missing.exitCode, 125);
   assert.match(missing.stderr, /not in a mounted directory/);
   for (const url of ['https://localhost:8686', 'http://example.com', 'http://localhost/a', 'http://user:secret@localhost']) {
-    const response = await f.run('true', { REMOTE_SANDBOX_API_URL: url });
+    const response = await f.run('true', { EXTERNAL_SANDBOX_API_URL: url });
     assert.equal(response.exitCode, 125);
-    assert.match(response.stderr, /REMOTE_SANDBOX_API_URL/);
+    assert.match(response.stderr, /EXTERNAL_SANDBOX_API_URL/);
   }
   assert.equal(f.calls.length, 0);
 });
@@ -125,7 +125,7 @@ test('prefix uses shell exit conventions for VM signals, timeouts, and output ca
 
 test('oversized forwarded stdin is rejected before execution', async t => {
   const f = await fixture(t);
-  const response = await f.run('cat', { REMOTE_SANDBOX_FORWARD_STDIN: '1' }, 'x'.repeat(32769));
+  const response = await f.run('cat', { EXTERNAL_SANDBOX_FORWARD_STDIN: '1' }, 'x'.repeat(32769));
   assert.equal(response.exitCode, 125);
   assert.match(response.stderr, /stdin exceeds 32768/);
   assert.equal(f.calls.length, 0);
@@ -138,9 +138,9 @@ test('prefix rejects redirects instead of sending commands to another endpoint',
     res.writeHead(307, { location: 'http://example.com/exec' });
     res.end();
   });
-  const result = await f.run('true', { REMOTE_SANDBOX_CWD: '/' });
+  const result = await f.run('true', { EXTERNAL_SANDBOX_CWD: '/' });
   assert.equal(result.exitCode, 125);
-  assert.match(result.stderr, /remote-sandbox-shell-prefix:/);
+  assert.match(result.stderr, /external-sandbox-shell-prefix:/);
 });
 
 test('SIGTERM aborts the API request and exits with shell status 143', { timeout: 5000 }, async t => {
@@ -156,7 +156,7 @@ test('SIGTERM aborts the API request and exits with shell status 143', { timeout
     res.once('close', markDisconnected);
   });
   const child = spawn(wrapper, ['sleep 60'], { cwd: f.cwd, env: {
-    ...process.env, REMOTE_SANDBOX_API_URL: `http://127.0.0.1:${f.port}`, REMOTE_SANDBOX_CWD: '/', REMOTE_SANDBOX_FORWARD_STDIN: undefined,
+    ...process.env, EXTERNAL_SANDBOX_API_URL: `http://127.0.0.1:${f.port}`, EXTERNAL_SANDBOX_CWD: '/', EXTERNAL_SANDBOX_FORWARD_STDIN: undefined,
   }, stdio: ['ignore', 'pipe', 'pipe'] });
   t.after(() => { if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL'); });
   const closed = once(child, 'close');

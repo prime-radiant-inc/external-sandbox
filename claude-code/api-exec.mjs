@@ -11,12 +11,12 @@ for (const [name, number] of [['SIGHUP', 1], ['SIGINT', 2], ['SIGTERM', 15]]) {
     interruptedExit = 128 + number;
     aborter.abort();
     // Also release an explicitly requested stdin read that has not reached EOF.
-    if (environmentSetting('REMOTE_SANDBOX_FORWARD_STDIN') === '1') process.stdin.destroy();
+    if (environmentSetting('EXTERNAL_SANDBOX_FORWARD_STDIN') === '1') process.stdin.destroy();
   });
 }
 
 function environmentSetting(name, fallback) {
-  return process.env[name] ?? process.env[name.replace('REMOTE_SANDBOX_', 'V86_')] ?? fallback;
+  return process.env[name] ?? process.env[name.replace('EXTERNAL_SANDBOX_', 'V86_')] ?? fallback;
 }
 
 function integerSetting(name, fallback, maximum) {
@@ -30,10 +30,10 @@ function integerSetting(name, fallback, maximum) {
 }
 
 function apiBase() {
-  const url = new URL(environmentSetting('REMOTE_SANDBOX_API_URL') ?? 'http://127.0.0.1:8686');
+  const url = new URL(environmentSetting('EXTERNAL_SANDBOX_API_URL') ?? 'http://127.0.0.1:8686');
   if (url.protocol !== 'http:' || !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
     || url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
-    throw new Error('REMOTE_SANDBOX_API_URL must be an http:// localhost, 127.0.0.1, or [::1] origin without credentials or a path.');
+    throw new Error('EXTERNAL_SANDBOX_API_URL must be an http:// localhost, 127.0.0.1, or [::1] origin without credentials or a path.');
   }
   return url;
 }
@@ -77,9 +77,9 @@ function relativeWithin(parent, child) {
 }
 
 async function guestCwd(base) {
-  const explicit = environmentSetting('REMOTE_SANDBOX_CWD');
+  const explicit = environmentSetting('EXTERNAL_SANDBOX_CWD');
   if (explicit !== undefined) {
-    if (!path.posix.isAbsolute(explicit) || explicit.includes('\0')) throw new Error('REMOTE_SANDBOX_CWD must be an absolute guest path.');
+    if (!path.posix.isAbsolute(explicit) || explicit.includes('\0')) throw new Error('EXTERNAL_SANDBOX_CWD must be an absolute guest path.');
     return explicit;
   }
   const cwd = process.cwd();
@@ -95,7 +95,7 @@ async function guestCwd(base) {
     if (relative === undefined || typeof mount?.guestPath !== 'string' || !path.posix.isAbsolute(mount.guestPath)) return [];
     return [{ hostPath: mount.hostPath, guestPath: path.posix.join(mount.guestPath, ...relative.split(path.sep)) }];
   }).sort((left, right) => right.hostPath.length - left.hostPath.length);
-  if (!candidates[0]) throw new Error(`Host cwd ${cwd} is not in a mounted directory. Set REMOTE_SANDBOX_CWD to an absolute guest path or mount this directory.`);
+  if (!candidates[0]) throw new Error(`Host cwd ${cwd} is not in a mounted directory. Set EXTERNAL_SANDBOX_CWD to an absolute guest path or mount this directory.`);
   return candidates[0].guestPath;
 }
 
@@ -118,11 +118,11 @@ async function main() {
   const args = process.argv.slice(2);
   if (args.length !== 1) throw new Error('Expected exactly one argument containing the complete shell command.');
   const base = apiBase();
-  const timeoutMs = integerSetting('REMOTE_SANDBOX_TIMEOUT_MS', 120_000, 300_000);
-  const maxOutputBytes = integerSetting('REMOTE_SANDBOX_MAX_OUTPUT_BYTES', undefined, 16 * 1024 * 1024);
+  const timeoutMs = integerSetting('EXTERNAL_SANDBOX_TIMEOUT_MS', 120_000, 300_000);
+  const maxOutputBytes = integerSetting('EXTERNAL_SANDBOX_MAX_OUTPUT_BYTES', undefined, 16 * 1024 * 1024);
   const request = { command: args[0], cwd: await guestCwd(base), timeoutMs };
   if (maxOutputBytes !== undefined) request.maxOutputBytes = maxOutputBytes;
-  if (environmentSetting('REMOTE_SANDBOX_FORWARD_STDIN') === '1') request.stdin = await readStdin();
+  if (environmentSetting('EXTERNAL_SANDBOX_FORWARD_STDIN') === '1') request.stdin = await readStdin();
   const result = await apiJson(base, '/exec', {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(request),
   }, timeoutMs + 60_000);
@@ -147,7 +147,7 @@ try {
   if (interruptedExit !== undefined) {
     process.exitCode = interruptedExit;
   } else {
-    process.stderr.write(`remote-sandbox-shell-prefix: ${error instanceof Error ? error.message : String(error)}\n`);
+    process.stderr.write(`external-sandbox-shell-prefix: ${error instanceof Error ? error.message : String(error)}\n`);
     process.exitCode = 125;
   }
 }

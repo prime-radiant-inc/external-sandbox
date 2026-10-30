@@ -149,7 +149,7 @@ async function readFileTool(runtime, params, signal, ctx) {
 }
 
 export default function registerSandboxExtension(pi, { Client = SandboxClient } = {}) {
-  pi.registerFlag("sandbox-url", { description: "Remote Sandbox server URL", type: "string", default: "http://127.0.0.1:8687" });
+  pi.registerFlag("sandbox-url", { description: "External Sandbox server URL", type: "string", default: "http://127.0.0.1:8687" });
   pi.registerFlag("sandbox-cwd", { description: "Absolute working directory inside the sandbox", type: "string" });
   pi.registerFlag("sandbox-timeout", { description: "Default command timeout in seconds (maximum 300)", type: "string", default: "120" });
   let runtimePromise;

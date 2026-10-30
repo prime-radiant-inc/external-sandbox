@@ -5,7 +5,7 @@
 # ///
 """Execute one complete guest shell command and stream byte-exact stdin/stdout/stderr.
 
-Usage: uv run --script remote_sandbox_exec.py [--no-stdin] 'the complete command'
+Usage: uv run --script external_sandbox_exec.py [--no-stdin] 'the complete command'
 The command is sent as JSON and is never evaluated by the host shell.
 """
 
@@ -39,22 +39,22 @@ class DirectConnection(connect):
 
 def environment_setting(name, fallback=None):
     """Prefer the current client setting, with legacy V86 names as fallbacks."""
-    return os.environ.get(name, os.environ.get(name.replace("REMOTE_SANDBOX_", "V86_", 1), fallback))
+    return os.environ.get(name, os.environ.get(name.replace("EXTERNAL_SANDBOX_", "V86_", 1), fallback))
 
 
 def api_origin():
-    raw = environment_setting("REMOTE_SANDBOX_API_URL", "http://127.0.0.1:8686")
+    raw = environment_setting("EXTERNAL_SANDBOX_API_URL", "http://127.0.0.1:8686")
     url = urlsplit(raw)
     if (url.scheme not in {"http", "ws"} or url.hostname not in {"localhost", "127.0.0.1", "::1"}
             or url.username is not None or url.password is not None or url.path not in {"", "/"}
             or url.query or url.fragment or any(character.isspace() for character in raw)):
-        raise ValueError("REMOTE_SANDBOX_API_URL must be an http:// or ws:// localhost, 127.0.0.1, or [::1] origin without credentials or a path.")
+        raise ValueError("EXTERNAL_SANDBOX_API_URL must be an http:// or ws:// localhost, 127.0.0.1, or [::1] origin without credentials or a path.")
     try:
         port = 80 if url.port is None else url.port
     except ValueError as error:
-        raise ValueError("REMOTE_SANDBOX_API_URL contains an invalid port.") from error
+        raise ValueError("EXTERNAL_SANDBOX_API_URL contains an invalid port.") from error
     if not 1 <= port <= 65535:
-        raise ValueError("REMOTE_SANDBOX_API_URL contains an invalid port.")
+        raise ValueError("EXTERNAL_SANDBOX_API_URL contains an invalid port.")
     return url.hostname, port, url.netloc
 
 
@@ -103,10 +103,10 @@ def relative_within(parent, child):
 
 
 async def guest_cwd(origin):
-    explicit = environment_setting("REMOTE_SANDBOX_CWD")
+    explicit = environment_setting("EXTERNAL_SANDBOX_CWD")
     if explicit is not None:
         if not posixpath.isabs(explicit) or "\0" in explicit:
-            raise ValueError("REMOTE_SANDBOX_CWD must be an absolute guest path.")
+            raise ValueError("EXTERNAL_SANDBOX_CWD must be an absolute guest path.")
         return explicit
     cwd = os.getcwd()
     body = await mounts_json(origin)
@@ -125,7 +125,7 @@ async def guest_cwd(origin):
         if relative is not None and isinstance(guest, str) and posixpath.isabs(guest):
             candidates.append((len(host), posixpath.normpath(posixpath.join(guest, *relative.split(os.sep)))))
     if not candidates:
-        raise ValueError(f"Host cwd {cwd} is not in a mounted directory. Set REMOTE_SANDBOX_CWD to an absolute guest path or mount this directory.")
+        raise ValueError(f"Host cwd {cwd} is not in a mounted directory. Set EXTERNAL_SANDBOX_CWD to an absolute guest path or mount this directory.")
     return max(candidates, key=lambda candidate: candidate[0])[1]
 
 
@@ -275,8 +275,8 @@ class Session:
 
     async def execute(self, command, forward_stdin):
         origin = api_origin()
-        timeout = integer_setting("REMOTE_SANDBOX_TIMEOUT_MS", 120000, 300000)
-        maximum = integer_setting("REMOTE_SANDBOX_MAX_OUTPUT_BYTES", None, 16 * 1024 * 1024)
+        timeout = integer_setting("EXTERNAL_SANDBOX_TIMEOUT_MS", 120000, 300000)
+        maximum = integer_setting("EXTERNAL_SANDBOX_MAX_OUTPUT_BYTES", None, 16 * 1024 * 1024)
         request = {"type": "start", "command": command, "cwd": await guest_cwd(origin),
                    "timeoutMs": timeout, "stdin": forward_stdin}
         if maximum is not None:
@@ -303,7 +303,7 @@ class Session:
 
 async def main():
     arguments = sys.argv[1:]
-    forward_stdin = environment_setting("REMOTE_SANDBOX_FORWARD_STDIN", "1") != "0"
+    forward_stdin = environment_setting("EXTERNAL_SANDBOX_FORWARD_STDIN", "1") != "0"
     if len(arguments) == 2 and arguments[0] == "--no-stdin":
         forward_stdin = False
         arguments = arguments[1:]
@@ -339,6 +339,6 @@ if __name__ == "__main__":
     try:
         status = asyncio.run(main())
     except Exception as error:
-        print(f"remote-sandbox-shell-prefix: {error}", file=sys.stderr, flush=True)
+        print(f"external-sandbox-shell-prefix: {error}", file=sys.stderr, flush=True)
         status = 125
     sys.exit(status)

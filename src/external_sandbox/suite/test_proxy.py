@@ -9,7 +9,7 @@ from aiohttp import web
 import pytest
 import pytest_asyncio
 
-from remote_sandbox.client import py, token
+from external_sandbox.client import py, token
 
 pytestmark = [pytest.mark.proxy]
 
@@ -139,7 +139,7 @@ except (urllib.error.URLError,OSError) as error:
 
 @pytest.mark.contract("P2")
 async def test_live_policy_update_revokes_existing_stream(client, management):
-    from remote_sandbox.client import Shell
+    from external_sandbox.client import Shell
     headers, original = management
     disconnected = asyncio.Event()
 
@@ -201,7 +201,7 @@ with urllib.request.build_opener(handler).open({origin + '/stream'!r}, timeout=1
 @pytest.mark.contract("P4")
 async def test_https_credentials_redaction_and_redirect_scope(client, management, request):
     import ssl
-    from remote_sandbox.tls_fixture import PLACEHOLDER, SYNTHETIC_SECRET
+    from external_sandbox.tls_fixture import PLACEHOLDER, SYNTHETIC_SECRET
     headers, original = management
     tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     tls.load_cert_chain(request.config.getoption("--proxy-tls-cert"), request.config.getoption("--proxy-tls-key"))
@@ -222,11 +222,11 @@ async def test_https_credentials_redaction_and_redirect_scope(client, management
     origin = f"https://127.0.0.1:{site._server.sockets[0].getsockname()[1]}"
     rule = {"origin": origin, "methods": ["GET"], "paths": ["/echo", "/redirect"], "allowCidrs": ["127.0.0.1/32"],
             "credential": {"header": "Authorization", "placeholder": PLACEHOLDER,
-                           "secretEnv": "REMOTE_SANDBOX_SPEC_SECRET", "prefix": "Bearer "}}
+                           "secretEnv": "EXTERNAL_SANDBOX_SPEC_SECRET", "prefix": "Bearer "}}
 
     async def guest(path, header):
         script = f'''import os,urllib.request,urllib.error
-assert 'REMOTE_SANDBOX_SPEC_SECRET' not in os.environ
+assert 'EXTERNAL_SANDBOX_SPEC_SECRET' not in os.environ
 os.environ['no_proxy']=''; os.environ['NO_PROXY']=''
 proxy=os.environ.get('https_proxy') or os.environ['HTTPS_PROXY']
 handler=urllib.request.ProxyHandler({{'https':proxy}})

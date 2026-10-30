@@ -1,8 +1,8 @@
-# Pi integration for Remote Sandbox
+# Pi integration for External Sandbox
 
-Run Pi's `bash`, `read`, `write`, `edit`, `grep`, `find`, and `ls` tools through the shared Remote Sandbox WebSocket API. Both `!command` and `!!command` use the same remote execution route. Pi, its model connection, and its session files stay on the host. The extension belongs to this repository's `pi/` directory and uses no backend's implementation code.
+Run Pi's `bash`, `read`, `write`, `edit`, `grep`, `find`, and `ls` tools through the shared External Sandbox WebSocket API. Both `!command` and `!!command` use the same remote execution route. Pi, its model connection, and its session files stay on the host. The extension belongs to this repository's `pi/` directory and uses no backend's implementation code.
 
-Tested with `@earendil-works/pi-coding-agent` **0.85.1**, Node.js 26, the Apple Container server on port **8687**, and the Quicksand server on port **8688**. Node.js **22.19 or newer** is required. The guest needs Bash and Python **3.12+**; `find` and `grep` also require `rg`. The container backend's [developer image](https://github.com/prime-radiant-inc/remote-sandbox-container/blob/main/examples/Containerfile), commonly tagged `sandbox-demo:latest`, and the Quicksand backend's default Alpine image include all three. The container backend's minimal default Python image does not include ripgrep. A v86 guest must also provide these utilities.
+Tested with `@earendil-works/pi-coding-agent` **0.85.1**, Node.js 26, the Apple Container server on port **8687**, and the Quicksand server on port **8688**. Node.js **22.19 or newer** is required. The guest needs Bash and Python **3.12+**; `find` and `grep` also require `rg`. The container backend's [developer image](https://github.com/prime-radiant-inc/external-sandbox-container/blob/main/examples/Containerfile), commonly tagged `sandbox-demo:latest`, and the Quicksand backend's default Alpine image include all three. The container backend's minimal default Python image does not include ripgrep. A v86 guest must also provide these utilities.
 
 ## Try it
 
@@ -10,9 +10,9 @@ Start any server with the project mounts and network policy you need:
 
 | Backend | URL |
 | --- | --- |
-| [remote-sandbox-container](https://github.com/prime-radiant-inc/remote-sandbox-container) | `http://127.0.0.1:8687` |
-| [remote-sandbox-v86](https://github.com/prime-radiant-inc/remote-sandbox-v86) | `http://127.0.0.1:8686` |
-| [remote-sandbox-quicksand](https://github.com/prime-radiant-inc/remote-sandbox-quicksand) | `http://127.0.0.1:8688` |
+| [external-sandbox-container](https://github.com/prime-radiant-inc/external-sandbox-container) | `http://127.0.0.1:8687` |
+| [external-sandbox-v86](https://github.com/prime-radiant-inc/external-sandbox-v86) | `http://127.0.0.1:8686` |
+| [external-sandbox-quicksand](https://github.com/prime-radiant-inc/external-sandbox-quicksand) | `http://127.0.0.1:8688` |
 
 The default remains port `8687` for compatibility. Select a backend explicitly with `--sandbox-url`. From this `pi/` directory, connect to the container backend:
 
@@ -68,7 +68,7 @@ This routes coding tools; it does not sandbox the Pi process. Pi still loads hos
 
 ## Share it
 
-The `remote-sandbox-pi` package is a normal Pi extension with an `index.ts` entry point. It can be installed from its directory using `pi install /absolute/path/to/remote-sandbox/pi`, or distributed as an npm package. Its runtime dependencies are `ws` and the Pi SDK peer dependency; the development lockfile pins Pi 0.85.1.
+The `external-sandbox-pi` package is a normal Pi extension with an `index.ts` entry point. It can be installed from its directory using `pi install /absolute/path/to/external-sandbox/pi`, or distributed as an npm package. Its runtime dependencies are `ws` and the Pi SDK peer dependency; the development lockfile pins Pi 0.85.1.
 
 To create an npm tarball:
 
@@ -82,15 +82,15 @@ An extracted tarball can be used with `npm install --ignore-scripts` followed by
 
 ```sh
 npm test
-REMOTE_SANDBOX_PI_TEST_URL=http://127.0.0.1:8687 npm run test:integration
+EXTERNAL_SANDBOX_PI_TEST_URL=http://127.0.0.1:8687 npm run test:integration
 ```
 
-`SANDBOX_PI_TEST_URL` remains a fallback alias for existing integration-test scripts; `REMOTE_SANDBOX_PI_TEST_URL` takes precedence. To test v86 or Quicksand, select port `8686` or `8688`; a v86 guest must also have the required utilities.
+`SANDBOX_PI_TEST_URL` remains a fallback alias for existing integration-test scripts; `EXTERNAL_SANDBOX_PI_TEST_URL` takes precedence. To test v86 or Quicksand, select port `8686` or `8688`; a v86 guest must also have the required utilities.
 
 Unit tests exercise malformed frames, stdin flow control, cancellation, bounded output, no fallback, guest paths, and helper behavior. Guest-helper unit tests use `uv run` with a disposable local fixture and require local `rg`. They run under uv's default Python and also under Python 3.12 when uv has it installed. A comparison test checks the helper's glob matching against `PurePosixPath.full_match` when uv has Python 3.13 or newer installed. Integration tests use temporary guest files and the actual Pi 0.85.1 RPC CLI, exercise all seven tools and manual shell routing, and make no paid model calls. They do not change the server or proxy configuration.
 
 The recorded live integration tests use Apple Container and Quicksand. The shared protocol permits any backend; this verification does not claim a live Pi run against v86.
 
-The relocation to `remote-sandbox/pi` passed 51 unit tests and 12 integration tests on 9 October 2026. The integration run used the actual Pi 0.85.1 RPC CLI and a temporary Apple Container server with `sandbox-demo:latest`, then removed its guest fixtures and stopped the temporary server. `npm pack --dry-run` confirmed that the distributable contains the entry point, three runtime modules, package metadata, and this README.
+The relocation to `external-sandbox/pi` passed 51 unit tests and 12 integration tests on 9 October 2026. The integration run used the actual Pi 0.85.1 RPC CLI and a temporary Apple Container server with `sandbox-demo:latest`, then removed its guest fixtures and stopped the temporary server. `npm pack --dry-run` confirmed that the distributable contains the entry point, three runtime modules, package metadata, and this README.
 
-On 9 October 2026, 53 unit tests passed, including the guest-helper fixture under Python 3.12 and the glob comparison over 544 path/pattern pairs. The 12 integration tests passed against a temporary [remote-sandbox-quicksand](https://github.com/prime-radiant-inc/remote-sandbox-quicksand) server using its default Alpine image, whose guest runs Python 3.12, with ripgrep and the example public-site proxy policy.
+On 9 October 2026, 53 unit tests passed, including the guest-helper fixture under Python 3.12 and the glob comparison over 544 path/pattern pairs. The 12 integration tests passed against a temporary [external-sandbox-quicksand](https://github.com/prime-radiant-inc/external-sandbox-quicksand) server using its default Alpine image, whose guest runs Python 3.12, with ripgrep and the example public-site proxy policy.

@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 
-from remote_sandbox.client import Shell, b64, py
+from external_sandbox.client import Shell, b64, py
 
 
 @pytest.mark.contract("S1")

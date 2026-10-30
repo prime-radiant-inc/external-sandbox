@@ -2,7 +2,7 @@
 
 These are observations about specific implementation commits, not part of the implementation-neutral [protocol definition](../SPEC.md). They were recorded on October 9, 2026, on macOS arm64, using dedicated loopback instances, temporary mounts, a deny-all initial proxy policy, and the generated localhost TLS fixture. Every service ran a real Linux guest; no fake execution backend or coding-model call was used.
 
-These historical reports retain their original project names and command paths. The projects are now named `remote-sandbox-container` and `remote-sandbox-v86`, and this runner is `remote-sandbox`. The reproduction commands below use the current command name; the archived JSON and recorded commits are unchanged.
+These historical reports retain their original project names and command paths. The projects are now named `external-sandbox-container` and `external-sandbox-v86`, and this runner is `external-sandbox`. The reproduction commands below use the current command name; the archived JSON and recorded commits are unchanged.
 
 | Target | Code tested | Full profile result | Report |
 | --- | --- | --- | --- |
@@ -13,12 +13,12 @@ Profiles: core, browser, mounts, proxy, proxy-tls. The runner was built at commi
 
 ## Quicksand
 
-`remote-sandbox-quicksand` was checked with the runner from a source checkout at `98fa5d7`, once with each of its guest images:
+`external-sandbox-quicksand` was checked with the runner from a source checkout at `98fa5d7`, once with each of its guest images:
 
 | Target | Code tested | Full profile result | Report |
 | --- | --- | --- | --- |
-| `remote-sandbox-quicksand` (Python / Quicksand QEMU), prepared Alpine 3.23 image | `a93aa17` | **116 passed**, exit 0 | [quicksand-alpine.json](quicksand-alpine.json) |
-| `remote-sandbox-quicksand` (Python / Quicksand QEMU), Ubuntu 24.04 image | `a93aa17` | **116 passed**, exit 0 | [quicksand-ubuntu.json](quicksand-ubuntu.json) |
+| `external-sandbox-quicksand` (Python / Quicksand QEMU), prepared Alpine 3.23 image | `a93aa17` | **116 passed**, exit 0 | [quicksand-alpine.json](quicksand-alpine.json) |
+| `external-sandbox-quicksand` (Python / Quicksand QEMU), Ubuntu 24.04 image | `a93aa17` | **116 passed**, exit 0 | [quicksand-ubuntu.json](quicksand-ubuntu.json) |
 
 Profiles: core, browser, mounts, proxy, proxy-tls. Both reports have complete selections, zero deselected cases, and `conforms` true. The guests ran under HVF on Apple silicon.
 
@@ -31,14 +31,14 @@ The Node handler classifies requests as browser requests only when Origin is pre
 To reproduce just this case against a running implementation:
 
 ```sh
-uv run remote-sandbox-conformance --url http://127.0.0.1:18786 \
+uv run external-sandbox-conformance --url http://127.0.0.1:18786 \
   --profile browser -k 'invalid_handshake and headers2' -v
 ```
 
 For the complete run, start a dedicated service exposing writable `/mnt/spec-rw` and read-only `/mnt/spec-ro`, enable the deny-all proxy, and configure upstream TLS trust and the synthetic secret as described in the [runner instructions](../README.md#optional-https-proxy-fixture). Then run:
 
 ```sh
-uv run remote-sandbox-conformance --url http://127.0.0.1:18786 \
+uv run external-sandbox-conformance --url http://127.0.0.1:18786 \
   --profile browser --profile mounts --profile proxy-tls \
   --rw-dir /mnt/spec-rw --ro-dir /mnt/spec-ro \
   --proxy-tls-cert work/tls/cert.pem --proxy-tls-key work/tls/key.pem \

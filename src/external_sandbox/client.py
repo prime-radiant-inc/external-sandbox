@@ -209,7 +209,7 @@ class RPC:
                 return message["result"]
 
     async def initialize(self):
-        result = await self.call("initialize", {"clientName": "remote-sandbox"})
+        result = await self.call("initialize", {"clientName": "external-sandbox"})
         assert isinstance(result["sessionId"], str) and result["sessionId"], result
         self.info = result["environmentInfo"]
         await self.notify("initialized")
