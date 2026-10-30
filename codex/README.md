@@ -97,6 +97,6 @@ In CLI 0.164.0, the TUI's `!command` shortcut requires a local environment and f
 
 ## Verification and protocol
 
-The [protocol specification](../SPEC.md) defines the common `/codex` process and filesystem contract, limits and unsupported capabilities. The [conformance runner](../README.md#run-against-a-server) checks that contract against any running backend without a model call. These checks do not by themselves prove compatibility with every Codex CLI release.
+The [protocol specification](../PROTOCOL.md) defines the common `/codex` process and filesystem contract, limits and unsupported capabilities. The [conformance runner](../README.md#run-against-a-server) checks that contract against any running backend without a model call. These checks do not by themselves prove compatibility with every Codex CLI release.
 
 Backend compatibility tests also exercise a real Codex CLI with deterministic local model responses, including native `apply_patch` on writable and read-only mounts. See the [v86 protocol and test notes](https://github.com/prime-radiant-inc/external-sandbox-v86/blob/main/outputs/external-sandbox-v86/docs/codex-protocol.md), the [container demo verification](https://github.com/prime-radiant-inc/external-sandbox-container/blob/main/docs/demo.md#verification) and the [Quicksand verification](https://github.com/prime-radiant-inc/external-sandbox-quicksand/blob/main/docs/verification.md) for their test commands and prerequisites. Recheck those tests before changing the CLI version used with this guide.

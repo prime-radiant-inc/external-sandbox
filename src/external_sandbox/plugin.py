@@ -30,7 +30,7 @@ def pytest_configure(config):
     for name, description in (("browser", "browser terminal protocol"), ("mounts", "read-only/read-write mounts"),
                               ("proxy", "same-host managed proxy management and HTTP forwarding"),
                               ("proxy_tls", "HTTPS credential substitution using a disposable trusted upstream"),
-                              ("contract", "SPEC.md requirement identifier")):
+                              ("contract", "PROTOCOL.md requirement identifier")):
         config.addinivalue_line("markers", f"{name}: {description}")
     try:
         config.spec_url = validate_url(config.getoption("--url") or "")

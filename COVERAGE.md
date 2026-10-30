@@ -1,6 +1,6 @@
 # Conformance coverage
 
-Each test carries `@pytest.mark.contract("ID")` referring to [SPEC.md](SPEC.md). Parameterized cases exercise different invalid inputs. Assertions match required fields and values while allowing extra response fields, variable chunk boundaries, directory ordering, timing, and backend identities.
+Each test carries `@pytest.mark.contract("ID")` referring to [PROTOCOL.md](PROTOCOL.md). Parameterized cases exercise different invalid inputs. Assertions match required fields and values while allowing extra response fields, variable chunk boundaries, directory ordering, timing, and backend identities.
 
 | ID | Coverage | Test module |
 | --- | --- | --- |

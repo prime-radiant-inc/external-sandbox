@@ -2,7 +2,7 @@
 
 External Sandbox provides a common interface for running commands and working with files inside isolated Linux environments. Clients use the same HTTP and WebSocket protocol with a v86 virtual machine, Apple Container, or Quicksand QEMU virtual machine backend. A shared browser UI provides a terminal and a managed-network policy editor.
 
-This repository is the project home: it contains the implementation-independent [protocol specification](SPEC.md), a Python/pytest conformance runner, the shared [Claude Code shell prefix and streaming client](claude-code/README.md), [Codex setup instructions](codex/README.md), and the [Pi extension](pi/README.md). The implementations and UI have their own repositories and release independently.
+This repository is the project home: it contains the implementation-independent [protocol specification](PROTOCOL.md), a Python/pytest conformance runner, the shared [Claude Code shell prefix and streaming client](claude-code/README.md), [Codex setup instructions](codex/README.md), and the [Pi extension](pi/README.md). The implementations and UI have their own repositories and release independently.
 
 | Project | Responsibility | Local directory |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ The core protocol covers discovery, buffered and streaming command execution, an
 
 Choose an implementation and follow its README to start a server. Ports remain implementation-specific: the current v86 examples use 8686, container examples use 8687, and Quicksand examples use 8688. The conformance runner below targets any implementation using only its public interfaces. See [coverage and limitations](COVERAGE.md) and [historical implementation results](verification/README.md); those results describe the exact commits tested and are not a claim that every later revision has passed every profile.
 
-The project rename changes repository, package, module, command, and documentation names. It does not change the protocol endpoints, message fields, browser WebSocket subprotocols, or proxy authentication headers in [SPEC.md](SPEC.md).
+The project rename changes repository, package, module, command, and documentation names. It does not change the protocol endpoints, message fields, browser WebSocket subprotocols, or proxy authentication headers in [PROTOCOL.md](PROTOCOL.md).
 
 ## Run against a server
 
