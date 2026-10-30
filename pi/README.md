@@ -2,7 +2,7 @@
 
 Run Pi's `bash`, `read`, `write`, `edit`, `grep`, `find`, and `ls` tools through the shared External Sandbox WebSocket API. Both `!command` and `!!command` use the same remote execution route. Pi, its model connection, and its session files stay on the host. The extension belongs to this repository's `pi/` directory and uses no backend's implementation code.
 
-Tested with `@earendil-works/pi-coding-agent` **0.85.1**, Node.js 26, the v86 server on port **8686**, the Apple Container server on port **8687**, and the Quicksand server on port **8688**. Node.js **22.19 or newer** is required. The guest needs Bash and Python **3.12+**; `find` and `grep` also require `rg`. The container backend's [developer image](https://github.com/prime-radiant-inc/external-sandbox-container/blob/main/examples/Containerfile), commonly tagged `sandbox-demo:latest`, the Quicksand backend's default Alpine image, and the v86 backend's bundled image include all three. The container backend's minimal default Python image does not include ripgrep.
+Tested with `@earendil-works/pi-coding-agent` **0.85.1**, Node.js 26, the v86 server on port **8686**, the Apple Container server on port **8687**, and the Quicksand server on port **8688**. Node.js **22.19 or newer** is required. The guest needs Bash and Python **3.12+**; `find` and `grep` also require `rg`. The default images of all three backends include them. A container backend started with `--image python:3.13-slim` has no ripgrep.
 
 ## Try it
 
