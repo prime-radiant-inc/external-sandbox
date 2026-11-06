@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Run Pi coding tools and user shell commands through the External Sandbox protocol",
   "type": "module",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "engines": { "node": ">=22.19.0" },
   "files": ["index.ts", "*.mjs", "README.md"],
   "pi": { "extensions": ["./index.ts"] },

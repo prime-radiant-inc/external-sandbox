@@ -2,6 +2,8 @@
 name = "external-sandbox"
 version = "0.1.0"
 description = "External Sandbox protocol specification and independent pytest conformance runner"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = ["aiohttp>=3.12,<4", "pytest>=8,<10", "pytest-asyncio>=1,<2", "pytest-timeout>=2.3,<3", "cryptography>=45,<48"]
 
