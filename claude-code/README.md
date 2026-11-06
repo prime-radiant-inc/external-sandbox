@@ -37,7 +37,7 @@ Build or install your chosen server using its own README first. Start it with th
 
 ```sh
 # v86: V86_APP points to its built application directory.
-V86_APP=/absolute/path/to/external-sandbox-v86/outputs/external-sandbox-v86
+V86_APP=/absolute/path/to/external-sandbox-v86
 node "$V86_APP/dist/cli.js" --port 8686 --preserve-paths --mount-rw "project=$PWD"
 
 # Apple Container: CONTAINER_APP points to its checkout.
