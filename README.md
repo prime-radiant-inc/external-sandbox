@@ -2,7 +2,7 @@
 
 External Sandbox provides a common interface for running commands and working with files inside isolated Linux environments. Clients use the same HTTP and WebSocket protocol with a v86 virtual machine, Apple Container, or Quicksand QEMU virtual machine backend. A shared browser UI provides a terminal and a managed-network policy editor.
 
-This repository is the project home: it contains the implementation-independent [protocol specification](PROTOCOL.md), a Python/pytest conformance runner, the shared [Claude Code shell prefix and streaming client](claude-code/README.md), [Codex setup instructions](codex/README.md), and the [Pi extension](pi/README.md). The implementations and UI have their own repositories and release independently.
+This repository is the project home: it contains the implementation-independent [protocol specification](PROTOCOL.md), a Python/pytest conformance runner, the shared [Claude Code shell prefix and streaming client](claude-code/README.md), and [Codex setup instructions](codex/README.md). The implementations, the UI and the [Pi extension](https://github.com/prime-radiant-inc/external-sandbox-pi) have their own repositories and release independently.
 
 | Project | Responsibility | Local directory |
 | --- | --- | --- |
@@ -11,6 +11,7 @@ This repository is the project home: it contains the implementation-independent 
 | [`external-sandbox-v86`](https://github.com/prime-radiant-inc/external-sandbox-v86) | TypeScript/Node.js implementation using v86 to run a Linux guest | `~/dev/prime-radiant-inc/external-sandbox-v86` |
 | [`external-sandbox-container`](https://github.com/prime-radiant-inc/external-sandbox-container) | Python implementation using Apple Container to run a Linux guest | `~/dev/prime-radiant-inc/external-sandbox-container` |
 | [`external-sandbox-quicksand`](https://github.com/prime-radiant-inc/external-sandbox-quicksand) | Python implementation using a Quicksand QEMU virtual machine to run a Linux guest | `~/dev/prime-radiant-inc/external-sandbox-quicksand` |
+| [`external-sandbox-pi`](https://github.com/prime-radiant-inc/external-sandbox-pi) | Pi extension that runs Pi's tools in a sandbox, published to npm | `~/dev/prime-radiant-inc/external-sandbox-pi` |
 
 The core protocol covers discovery, buffered and streaming command execution, and a Codex-compatible process/filesystem endpoint. Optional browser, mount, and managed-proxy profiles add explicit requirements. Each implementation owns its execution backend, lifecycle, file mounts, and authorization. The UI owns presentation; each server bundles a pinned UI release, injects its own branding and tokens, and serves the files from the same origin. Installed servers do not need a sibling UI checkout or Git submodules.
 
