@@ -17,8 +17,6 @@ The core protocol covers discovery, buffered and streaming command execution, an
 
 Choose an implementation and follow its README to start a server. Ports remain implementation-specific: the current v86 examples use 8686, container examples use 8687, and Quicksand examples use 8688. The conformance runner below targets any implementation using only its public interfaces. See [coverage and limitations](COVERAGE.md) and [historical implementation results](verification/README.md); those results describe the exact commits tested and are not a claim that every later revision has passed every profile.
 
-The project rename changes repository, package, module, command, and documentation names. It does not change the protocol endpoints, message fields, browser WebSocket subprotocols, or proxy authentication headers in [PROTOCOL.md](PROTOCOL.md).
-
 ## Run against a server
 
 Requirements: Python 3.12+, `uv`, and a dedicated running server whose guest has Bash and Python 3. The runner connects only to loopback origins. It executes commands, creates temporary guest files, and checks cancellation; do not share the target instance with an interactive session. No Codex, Claude, Pi, paid model call, or test-time Internet access is needed after installing dependencies.
