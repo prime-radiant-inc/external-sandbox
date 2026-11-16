@@ -1068,14 +1068,14 @@
     "mounts": [
       {
         "name": "spec-rw",
-        "hostPath": "/Users/simon/Dropbox/dev/prime-radiant-inc/sandboxing/exec-server-spec/work/rw",
+        "hostPath": "/Users/example/prime-radiant-inc/sandboxing/exec-server-spec/work/rw",
         "mode": "rw",
         "preservedPaths": [],
         "guestPath": "/mnt/spec-rw"
       },
       {
         "name": "spec-ro",
-        "hostPath": "/Users/simon/Dropbox/dev/prime-radiant-inc/sandboxing/exec-server-spec/work/ro",
+        "hostPath": "/Users/example/prime-radiant-inc/sandboxing/exec-server-spec/work/ro",
         "mode": "ro",
         "preservedPaths": [],
         "guestPath": "/mnt/spec-ro"

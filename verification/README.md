@@ -2,7 +2,7 @@
 
 These are observations about specific implementation commits, not part of the implementation-neutral [protocol definition](../PROTOCOL.md). They were recorded on October 9, 2026, on macOS arm64, using dedicated loopback instances, temporary mounts, a deny-all initial proxy policy, and the generated localhost TLS fixture. Every service ran a real Linux guest; no fake execution backend or coding-model call was used.
 
-These historical reports retain their original project names and command paths. The projects are now named `external-sandbox-container` and `external-sandbox-v86`, and this runner is `external-sandbox`. The reproduction commands below use the current command name; the archived JSON and recorded commits are unchanged.
+These historical reports retain their original project names and command paths. The projects are now named `external-sandbox-container` and `external-sandbox-v86`, and this runner is `external-sandbox`. The reproduction commands below use the current command name. Host paths in the archived JSON are shown under `/Users/example`; the results and recorded commits are as recorded.
 
 | Target | Code tested | Full profile result | Report |
 | --- | --- | --- | --- |

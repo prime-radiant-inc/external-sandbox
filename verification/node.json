@@ -90,7 +90,7 @@
       "requirements": [
         "B2"
       ],
-      "failure": "client = <exec_server_spec.client.Client object at 0x10a4b9c50>\nheaders = {'Sec-Fetch-Site': 'same-origin'}, protocols = []\n\n    @pytest.mark.browser\n    @pytest.mark.contract(\"B2\")\n    @pytest.mark.parametrize(\"headers,protocols\", [\n        ({\"Origin\": \"same\"}, []), ({\"Origin\": \"same\"}, [\"sandbox-terminal\", \"sandbox-token.wrong\"]),\n        ({\"Sec-Fetch-Site\": \"same-origin\"}, []),\n        ({\"Origin\": \"same\", \"Sec-Fetch-Site\": \"cross-site\"}, [])])\n    async def test_browser_authorization_rejects_invalid_handshake(client, headers, protocols):\n        headers = {k: client.url if v == \"same\" else v for k, v in headers.items()}\n        try:\n            ws = await client.ws(\"/exec/ws\", headers=headers, protocols=protocols)\n        except aiohttp.WSServerHandshakeError as error:\n            assert error.status == 403\n        else:\n            await ws.close()\n>           pytest.fail(\"Unauthorized browser WebSocket was accepted\")\nE           Failed: Unauthorized browser WebSocket was accepted\n\n/Users/simon/.cache/uv/archive-v0/nzXmXCQQuiisC29d/lib/python3.14/site-packages/exec_server_spec/suite/test_access.py:64: Failed"
+      "failure": "client = <exec_server_spec.client.Client object at 0x10a4b9c50>\nheaders = {'Sec-Fetch-Site': 'same-origin'}, protocols = []\n\n    @pytest.mark.browser\n    @pytest.mark.contract(\"B2\")\n    @pytest.mark.parametrize(\"headers,protocols\", [\n        ({\"Origin\": \"same\"}, []), ({\"Origin\": \"same\"}, [\"sandbox-terminal\", \"sandbox-token.wrong\"]),\n        ({\"Sec-Fetch-Site\": \"same-origin\"}, []),\n        ({\"Origin\": \"same\", \"Sec-Fetch-Site\": \"cross-site\"}, [])])\n    async def test_browser_authorization_rejects_invalid_handshake(client, headers, protocols):\n        headers = {k: client.url if v == \"same\" else v for k, v in headers.items()}\n        try:\n            ws = await client.ws(\"/exec/ws\", headers=headers, protocols=protocols)\n        except aiohttp.WSServerHandshakeError as error:\n            assert error.status == 403\n        else:\n            await ws.close()\n>           pytest.fail(\"Unauthorized browser WebSocket was accepted\")\nE           Failed: Unauthorized browser WebSocket was accepted\n\n/Users/example/.cache/uv/archive-v0/nzXmXCQQuiisC29d/lib/python3.14/site-packages/exec_server_spec/suite/test_access.py:64: Failed"
     },
     {
       "id": "test_browser_authorization_rejects_invalid_handshake[headers3-protocols3]",
@@ -1069,13 +1069,13 @@
     "mounts": [
       {
         "name": "spec-rw",
-        "hostPath": "/Users/simon/Dropbox/dev/prime-radiant-inc/sandboxing/exec-server-spec/work/rw",
+        "hostPath": "/Users/example/prime-radiant-inc/sandboxing/exec-server-spec/work/rw",
         "mode": "rw",
         "guestPath": "/mnt/spec-rw"
       },
       {
         "name": "spec-ro",
-        "hostPath": "/Users/simon/Dropbox/dev/prime-radiant-inc/sandboxing/exec-server-spec/work/ro",
+        "hostPath": "/Users/example/prime-radiant-inc/sandboxing/exec-server-spec/work/ro",
         "mode": "ro",
         "guestPath": "/mnt/spec-ro"
       }
